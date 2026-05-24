@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
     implementation(libs.guava)
-    implementation("org.postgresql:postgresql:42.7.1")
+    implementation("org.postgresql:postgresql:42.7.2")
 }
 
 testing {
@@ -26,5 +26,5 @@ java {
 }
 
 application {
-    mainClass = "org.example.App"
+    mainClass = "wordwizard.App"
 }
