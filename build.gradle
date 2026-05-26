@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.postgresql:postgresql:42.7.2'
+
+    implementation 'org.jetbrains:annotations:24.1.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'wordwizard.App'
+}
+
+run {
+    environment = System.getenv()
+}

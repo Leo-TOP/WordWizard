@@ -1,5 +1,6 @@
 package wordwizard.entities;
 
-public record Word(String wordName, String definition) {
 
-}
+import org.jetbrains.annotations.NotNull;
+
+public record Word(@NotNull String wordName, String definition){}

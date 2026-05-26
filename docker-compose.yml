@@ -1,18 +1,33 @@
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: news_db_cont
-    restart: always
+  database:
+    image: postgres:16
+    container_name: wordwizard-db
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: news
+      POSTGRES_DB: ${POSTGRES_DB:-wordwizard}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "5429:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
+      - ./initDB:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-      - ./initdb:/docker-entrypoint-initdb.d
+    restart: unless-stopped
 
+  app:
+    build: .
+    container_name: wordwizard-app
+    depends_on:
+      - database
+    environment:
+      DB_URL: ${DB_URL:-jdbc:postgresql://database:5432/wordwizard}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+    restart: unless-stopped
 
 volumes:
   postgres_data:
