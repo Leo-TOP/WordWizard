@@ -1,4 +1,4 @@
-package wordwizard.projectLogic.database;
+package wordwizard.dat.database;
 
 
 
