@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://api.openai.com/v1
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.7
+    model:
+      embedding: transformers
+    embedding:
+      transformer:
+        tokenizer:
+          uri: classpath:onnx/all-MiniLM-L6-v2/tokenizer.json
+          options:
+            padding: true
+        onnx:
+          modelUri: classpath:onnx/all-MiniLM-L6-v2/model.onnx
