@@ -1,5 +1,13 @@
 package wordwizard.cli.commands;
 
-public interface Command {
-    public void execute();
+import wordwizard.businesslogic.WordWizardService;
+
+public abstract class Command {
+    protected final WordWizardService mainGuy;
+
+    protected Command(WordWizardService mainGuy) {
+        this.mainGuy = mainGuy;
+    }
+
+    public abstract void execute();
 }

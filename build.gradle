@@ -23,7 +23,9 @@ dependencyManagement {
 dependencies {
     implementation 'org.postgresql:postgresql:42.7.2'
 
+
     implementation 'org.jetbrains:annotations:24.1.0'
+
 
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
@@ -31,19 +33,23 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.36'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.1'
 
+
     implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
 
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    implementation 'com.google.genai:google-genai:1.15.0'
+
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }
 
 test {

@@ -1,6 +1,6 @@
 services:
   database:
-    image: postgres:16
+    image:  pgvector/pgvector:pg16
     container_name: wordwizard-db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-wordwizard}
@@ -11,23 +11,12 @@ services:
     volumes:
       - ./initDB:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  app:
-    build: .
-    container_name: wordwizard-app
-    depends_on:
-      - database
-    environment:
-      DB_URL: ${DB_URL:-jdbc:postgresql://database:5432/wordwizard}
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-    ports:
-      - "${APP_PORT:-8080}:8080"
-    volumes:
-      - ./output:/app/output
-      - ./logs:/app/logs
-    restart: unless-stopped
+    restart: no
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-wordwizard}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

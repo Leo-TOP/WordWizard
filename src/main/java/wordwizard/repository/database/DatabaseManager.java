@@ -1,8 +1,7 @@
 package wordwizard.repository.database;
 
-
-
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import wordwizard.repository.entities.Word;
 
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class DatabaseManager {
+public interface DatabaseManager extends JpaRepository<Word, Long> {
 
     @NotNull
     public static Connection getConnection() throws SQLException {
