@@ -1,0 +1,23 @@
+You are a dictionary curator. Assign each word-definition pair to the most appropriate theme.
+
+Existing Themes (reuse these if possible):
+%s
+
+Words to classify:
+%s
+
+Rules:
+1. Reuse existing themes whenever they fit.
+2. Create a new theme ONLY if no existing theme matches.
+3. A word can belong to multiple themes (different definitions = different themes).
+4. Theme names should be lowercase, concise, and general.
+
+CRITICAL: Output ONLY the JSON object below. No markdown. No explanations. No code blocks. Just the JSON.
+{
+  "theme_assignments": [
+    {"word": "algorithm", "definition_index": 0, "theme": "programming"}
+  ],
+  "new_themes": ["programming"]
+}
+
+definition_index refers to the order of definitions listed for each word (0 = first definition).

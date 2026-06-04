@@ -3,49 +3,39 @@ package wordwizard.businesslogic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import wordwizard.businesslogic.embeddingapplication.EmbeddingService;
+import wordwizard.businesslogic.export.ExportService;
+import wordwizard.businesslogic.themesprocessing.ThemesService;
 import wordwizard.repository.database.DatabaseManager;
+import wordwizard.repository.entities.Theme;
 import wordwizard.repository.entities.Word;
 import wordwizard.repository.externalsourcefetching.DictionaryApiClient;
-import wordwizard.repository.externalsourcefetching.dto.DictionaryApiResponse;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WordWizardService {
+        private final DictionaryApiClient apiClient;
+        private final DatabaseManager dbManager;
+        private final ThemesService themesService;
+        private final EmbeddingService embeddingService;
+        private final ExportService exportService;
 
-    private final DictionaryApiClient apiClient;
-    private final DatabaseManager dbManager;
+        public Word getWord(String word, Integer limit) { ... }
 
+        public List<Word> getWords(List<String> words) { ... }
 
-    @Transactional
-    public List<Word> lookupWords(List<String> words) {
-        List<Word> result = new ArrayList<>();
+        public List<Word> filterWords(String theme, String pos, String search) { ... }
 
-        for (String word : words) {
-            Word existing = dbManager.findByWord(word).orElse(null);
-            if (existing != null) {
-                log.info("'{}' already in database", word);
-                result.add(existing);
-                continue;
-            }
+        public List<Theme> getAllThemes() { ... }
 
-            List<DictionaryApiResponse> responses = apiClient.fetchWord(word);
-            if (responses.isEmpty()) {
-                log.warn("No results for '{}'", word);
-                continue;
-            }
+        public List<Word> findByDefinition(String definition) { ... }
 
-            Word newWord = mapToEntity(word, responses.getFirst());
+        public List<Word> findSimilar(String word) { ... }
 
-            dbManager.save(newWord);
-            log.info("Saved '{}' with {} definitions", word, newWord.getDefinitions().size());
+        public void addWord(String word, String definition, String pos, String theme) { ... }
 
-            result.add(newWord);
-        }
-
-        return result;
+        public void exportWords(String theme, String format, String outputPath) { ... }
     }
 }

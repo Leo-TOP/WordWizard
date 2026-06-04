@@ -1,12 +1,28 @@
 package wordwizard.repository.entities;
 
-import jakarta.persistence.Entity;
-import org.jetbrains.annotations.NotNull;
+/**
+ * Immutable domain entity for a single word definition.
+ *
+ * {@code embedding} is {@code null} until computed by {@link wordwizard.businesslogic.embeddingapplication.EmbeddingService}
+ * and persisted. All other fields are non-null after construction via the factory method.
+ */
+public record Definition(
+        Long   id,
+        String text,
+        String partOfSpeech,
+        String example,
+        float[] embedding
+) {
 
-import java.util.List;
+    public static Definition create(
+            String text,
+            String partOfSpeech,
+            String example
+    ) {
+        return new Definition(null, text, partOfSpeech, example, null);
+    }
 
-@Entity
-public record Definition(@NotNull
-                         String definitionText,
-                         List<String> Examples,
-                         List<Integer> embeddingVector){}
+    public Definition withEmbedding(float[] embedding) {
+        return new Definition(id, text, partOfSpeech, example, embedding);
+    }
+}

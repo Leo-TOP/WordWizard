@@ -1,0 +1,17 @@
+You are a dictionary curator. Assign a theme to this word-definition pair.
+
+Word: %s
+Definition: %s
+
+Existing themes: %s
+
+Rules:
+1. Reuse an existing theme if it fits.
+2. Create a new theme only if necessary.
+3. Theme names should be lowercase, concise, and general.
+
+CRITICAL: Output ONLY the JSON object below. No markdown. No explanations. No code blocks. Just the JSON.
+{
+  "theme": "chosen-theme-name",
+  "is_new": true
+}

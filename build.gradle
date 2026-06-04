@@ -38,7 +38,10 @@ dependencies {
 
 
     implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter'
-    implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
+    implementation 'org.springframework.ai:spring-ai-pgvector-store'
+
+    implementation 'com.google.genai:google-genai:1.0.0'
 
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
