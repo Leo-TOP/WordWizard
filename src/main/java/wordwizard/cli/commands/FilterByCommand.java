@@ -1,10 +1,10 @@
 package wordwizard.cli.commands;
 
 
-import wordwizard.businesslogic.WordWizardService;
+import wordwizard.businesslogic.CentralService;
 
 public class FilterByCommand extends Command {
-    protected FilterByCommand(WordWizardService mainGuy) {
+    protected FilterByCommand(CentralService mainGuy) {
         super(mainGuy);
     }
 

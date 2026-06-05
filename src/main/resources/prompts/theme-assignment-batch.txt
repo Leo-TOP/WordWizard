@@ -16,8 +16,7 @@ CRITICAL: Output ONLY the JSON object below. No markdown. No explanations. No co
 {
   "theme_assignments": [
     {"word": "algorithm", "definition_index": 0, "theme": "programming"}
-  ],
-  "new_themes": ["programming"]
+  ]
 }
 
 definition_index refers to the order of definitions listed for each word (0 = first definition).

@@ -1,10 +1,10 @@
 package wordwizard.cli.commands;
 
-import wordwizard.businesslogic.WordWizardService;
+import wordwizard.businesslogic.CentralService;
 
 
 public class ExportCommand extends Command {
-    protected ExportCommand(WordWizardService mainGuy) {
+    protected ExportCommand(CentralService mainGuy) {
         super(mainGuy);
     }
 

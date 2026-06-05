@@ -1,5 +1,11 @@
 package wordwizard.businesslogic.export.exporters;
 
+import wordwizard.repository.entities.Word;
+
+import java.util.List;
+
 public interface Exporter {
-    public void export();
+    byte[] export(List<Word> words);
+
+    String getFormat();
 }

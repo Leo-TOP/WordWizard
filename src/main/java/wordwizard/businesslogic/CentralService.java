@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class WordWizardService {
+public class CentralService {
         private final DictionaryApiClient apiClient;
         private final DatabaseManager dbManager;
         private final ThemesService themesService;

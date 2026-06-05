@@ -1,9 +1,9 @@
 package wordwizard.cli.commands;
 
-import wordwizard.businesslogic.WordWizardService;
+import wordwizard.businesslogic.CentralService;
 
 public class SaveCommand extends Command {
-    protected SaveCommand(WordWizardService mainGuy) {
+    protected SaveCommand(CentralService mainGuy) {
         super(mainGuy);
     }
 

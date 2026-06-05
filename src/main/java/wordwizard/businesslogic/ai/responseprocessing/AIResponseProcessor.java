@@ -21,7 +21,7 @@ public class AIResponseProcessor {
             return gson.fromJson(rawResponse.trim(), BatchThemeResponse.class);
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse AI response: {}", rawResponse, e);
-            return new BatchThemeResponse(new ArrayList<>(), new ArrayList<>());
+            return new BatchThemeResponse(new ArrayList<>());
         }
     }
 
@@ -30,7 +30,7 @@ public class AIResponseProcessor {
             return gson.fromJson(rawResponse.trim(), SingleThemeResponse.class);
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse AI response: {}", rawResponse, e);
-            return new SingleThemeResponse("unclassified", false);
+            return new SingleThemeResponse("unclassified");
         }
     }
 }

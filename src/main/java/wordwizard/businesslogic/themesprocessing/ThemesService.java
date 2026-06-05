@@ -6,10 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import wordwizard.businesslogic.ai.promptbuilding.PromptBuilder;
 import wordwizard.businesslogic.ai.responseprocessing.AIResponseProcessor;
-import wordwizard.businesslogic.ai.responseprocessing.dto.AIResponseDtoMapper;
+import wordwizard.businesslogic.ai.responseprocessing.dto.BatchThemeResponse;
+import wordwizard.businesslogic.ai.responseprocessing.dto.SingleThemeResponse;
+import wordwizard.businesslogic.dtomapping.aimapping.AIResponseDtoMapper;
+import wordwizard.businesslogic.dtomapping.aimapping.AssignmentInput;
 import wordwizard.repository.aiclients.GeminiChatClient;
+import wordwizard.repository.database.DatabaseManager;
+import wordwizard.repository.entities.Definition;
+import wordwizard.repository.entities.Theme;
 import wordwizard.repository.entities.Word;
-
 
 import java.util.List;
 
@@ -21,32 +26,73 @@ public class ThemesService {
     private final PromptBuilder promptBuilder;
     private final AIResponseProcessor responseProcessor;
     private final AIResponseDtoMapper mapper;
+    private final DatabaseManager repository;
 
     @Transactional
     public void assignThemesToWords(List<Word> words) {
         if (words == null || words.isEmpty()) return;
 
-        String prompt = promptBuilder.buildThemeAssignmentPrompt(words);
-        String response = aiClient.generateContent(prompt);
+        List<Theme> allThemes = fetchExistingThemes();
+        String prompt = buildBatchPrompt(words, allThemes);
+        BatchThemeResponse batchResponse = callAIForBatch(prompt);
+        List<AssignmentInput> inputs = mapToAssignments(batchResponse, words);
+        saveAssignments(inputs);
 
-        var batchResponse = responseProcessor.parseBatchResponse(response);
-        if (batchResponse.themeAssignments().isEmpty()) {
-            log.warn("AI returned no theme assignments");
-            return;
-        }
-
-        mapper.applyBatchResponse(batchResponse, words);
-        log.info("Assigned themes for {} words", words.size());
+        log.info("Applied {} theme assignments for {} words", inputs.size(), words.size());
     }
 
     @Transactional
-    public String assignThemeToSingleWord(Word word) {
-        String defText = word.definitions().isEmpty() ? "" : word.definitions().get(0).text();
+    public String assignThemeToDefinition(Word word, Definition def) {
+        List<Theme> existingThemes = fetchExistingThemes();
+        String prompt = buildSinglePrompt(word, def, existingThemes);
+        SingleThemeResponse singleResponse = callAIForSingle(prompt);
+        AssignmentInput input = mapToAssignment(singleResponse, word, def);
+        saveAssignment(input);
 
-        String prompt = promptBuilder.buildSingleWordPrompt(word.word(), defText);
+        return input.themeName();
+    }
+
+
+    private List<Theme> fetchExistingThemes() {
+        return repository.findAllThemes();
+    }
+
+    private String buildBatchPrompt(List<Word> words, List<Theme> allThemes) {
+        return promptBuilder.buildThemeAssignmentPrompt(words, allThemes);
+    }
+
+    private String buildSinglePrompt(Word word, Definition def, List<Theme> existingThemes) {
+        return promptBuilder.buildSingleWordPrompt(word, def, existingThemes);
+    }
+
+    private BatchThemeResponse callAIForBatch(String prompt) {
         String response = aiClient.generateContent(prompt);
+        return responseProcessor.parseBatchResponse(response);
+    }
 
-        var singleResponse = responseProcessor.parseSingleResponse(response);
-        return mapper.applySingleResponse(singleResponse, word);
+    private SingleThemeResponse callAIForSingle(String prompt) {
+        String response = aiClient.generateContent(prompt);
+        return responseProcessor.parseSingleResponse(response);
+    }
+
+    private List<AssignmentInput> mapToAssignments(BatchThemeResponse response, List<Word> words) {
+        return mapper.toAssignments(response, words);
+    }
+
+    private AssignmentInput mapToAssignment(SingleThemeResponse response, Word word, Definition def) {
+        return mapper.toAssignment(response, word, def);
+    }
+
+    private void saveAssignments(List<AssignmentInput> inputs) {
+        for (AssignmentInput input : inputs) {
+            saveAssignment(input);
+        }
+    }
+
+    private void saveAssignment(AssignmentInput input) {
+        if (input.definitionId() != null) {
+            Long themeId = repository.getOrCreateTheme(input.themeName());
+            repository.assignThemeToDefinition(input.wordId(), themeId, input.definitionId());
+        }
     }
 }

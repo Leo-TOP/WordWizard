@@ -1,11 +1,11 @@
 package wordwizard.cli.commands;
 
-import wordwizard.businesslogic.WordWizardService;
+import wordwizard.businesslogic.CentralService;
 
 public abstract class Command {
-    protected final WordWizardService mainGuy;
+    protected final CentralService mainGuy;
 
-    protected Command(WordWizardService mainGuy) {
+    protected Command(CentralService mainGuy) {
         this.mainGuy = mainGuy;
     }
 

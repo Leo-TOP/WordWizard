@@ -35,11 +35,19 @@ class PromptObjectFormatter {
         return sb.toString().trim();
     }
 
-    String formatDefinition(int index, Definition def) {
+    String formatDefinition(Integer index, Definition def) {
         String pos = def.partOfSpeech();
         if (pos != null && !pos.isEmpty()) {
             return String.format("  [%d] %s (%s)\n", index, def.text(), pos);
         }
         return String.format("  [%d] %s\n", index, def.text());
+    }
+
+    public String formatDefinition(Definition def) {
+        String pos = def.partOfSpeech();
+        if (pos != null && !pos.isEmpty()) {
+            return String.format("%s (%s)", def.text(), pos);
+        }
+        return def.text();
     }
 }

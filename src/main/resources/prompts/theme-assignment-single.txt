@@ -3,7 +3,8 @@ You are a dictionary curator. Assign a theme to this word-definition pair.
 Word: %s
 Definition: %s
 
-Existing themes: %s
+Existing Themes (reuse these if possible):
+%s
 
 Rules:
 1. Reuse an existing theme if it fits.
@@ -12,6 +13,5 @@ Rules:
 
 CRITICAL: Output ONLY the JSON object below. No markdown. No explanations. No code blocks. Just the JSON.
 {
-  "theme": "chosen-theme-name",
-  "is_new": true
+  "theme": "chosen-theme-name"
 }

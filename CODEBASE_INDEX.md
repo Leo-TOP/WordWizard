@@ -1,5 +1,5 @@
 # Codebase Index
-> 2026-06-04 · 53 files · ~13.0k tokens total
+> 2026-06-05 · 71 files · ~24.4k tokens total
 >
 > **How to use:** Read this file first. Navigate to the exact file you need,
 > then read only that file. Do not read entire directories.
@@ -10,29 +10,54 @@
 - `App.java` — App, main
 
 **src\main\java\wordwizard\businesslogic/**
-- `WordWizardService.java` — WordWizardService, getWord, getWords, filterWords, getAllThemes, findByDefinition, findSimilar, addWord +1
+- `CentralService.java` — CentralService, getWord, getWords, filterWords, getAllThemes, findByDefinition, findSimilar, addWord +1
+
+**src\main\java\wordwizard\businesslogic\ai\promptbuilding/**
+- `PromptBuilder.java` — PromptBuilder, buildThemeAssignmentPrompt, buildSingleWordPrompt
+- `PromptObjectFormatter.java` — formatDefinition, PromptObjectFormatter
+
+**src\main\java\wordwizard\businesslogic\ai\responseprocessing/**
+- `AIResponseProcessor.java` — AIResponseProcessor, parseBatchResponse, parseSingleResponse
+
+**src\main\java\wordwizard\businesslogic\ai\responseprocessing\dto/**
+- `BatchThemeResponse.java` — BatchThemeResponse
+- `SingleThemeResponse.java` — SingleThemeResponse
+- `ThemeAssignment.java` — ThemeAssignment
+
+**src\main\java\wordwizard\businesslogic\clioutput/**
+- `OutputFormatter.java` — OutputFormatter
 
 **src\main\java\wordwizard\businesslogic\dtomapping/**
 - `DtoMapper.java` — DtoMapper, mapToWord
+
+**src\main\java\wordwizard\businesslogic\dtomapping\aimapping/**
+- `AIResponseDtoMapper.java` — AIResponseDtoMapper, toAssignments, toAssignment
+- `AssignmentInput.java` — AssignmentInput
 
 **src\main\java\wordwizard\businesslogic\embeddingapplication/**
 - `EmbeddingService.java` — EmbeddingService
 
 **src\main\java\wordwizard\businesslogic\export/**
-- `ExportService.java` — ExportService
+- `ExportService.java` — ExportService, export
+
+**src\main\java\wordwizard\businesslogic\export\dto/**
+- `ExportRequest.java` — ExportRequest
 
 **src\main\java\wordwizard\businesslogic\export\exporters/**
-- `DocxExporter.java` — DocxExporter, export
-- `Exporter.java` — Exporter, export
-- `MarkdownExporter.java` — MarkdownExporter, export
+- `DocxExporter.java` — DocxExporter, getFormat
+- `ExcelExporter.java` — ExcelExporter, getFormat
+- `Exporter.java` — Exporter
+- `ExporterFactory.java` — ExporterFactory, getExporter
+- `MarkdownExporter.java` — MarkdownExporter, getFormat
+- `TextExporter.java` — TextExporter, getFormat
 
 **src\main\java\wordwizard\businesslogic\outputprocessing/**
 - `OutputFileProcessor.java` — OutputFileProcessor, process
-- `Processor.java` — Processor, process
+- `OutputProcessor.java` — OutputProcessor, process
 - `WordProcessor.java` — WordProcessor, process
 
-**src\main\java\wordwizard\businesslogic\themes/**
-- `ThemesService.java` — ThemesService
+**src\main\java\wordwizard\businesslogic\themesprocessing/**
+- `ThemesService.java` — ThemesService, assignThemesToWords, assignThemeToDefinition
 
 **src\main\java\wordwizard\cli/**
 - `CliEngine.java` — CliEngine, run
@@ -55,15 +80,16 @@
 **src\main\java\wordwizard\exceptions/**
 - `WordNotFoundException.java` — WordNotFoundException
 
-**src\main\java\wordwizard\repository\ai/**
-- `AIQueryFormer.java` — AIQueryFormer
+**src\main\java\wordwizard\repository\aiclients/**
 - `GeminiChatClient.java` — GeminiChatClient, generateContent
 
 **src\main\java\wordwizard\repository\createembeddings/**
 - `EmbeddingFactory.java` — EmbeddingFactory
 
 **src\main\java\wordwizard\repository\database/**
-- `DatabaseManager.java`
+- `DatabaseManager.java` — DatabaseManager, findAllThemes, getAllWords, getOrCreateTheme, assignThemeToDefinition, findWordsForExport
+
+**src\main\java\wordwizard\repository\database\repos/**
 - `DefinitionRepository.java` — DefinitionRepository
 - `JdbcDefinitionRepository.java` — JdbcDefinitionRepository, save, updateEmbedding, findByWordId, findByEmbedding, findSimilarTo
 - `JdbcThemeRepository.java` — JdbcThemeRepository, findAll, findByName, getOrCreate, assignToDefinition
@@ -86,18 +112,21 @@
 - `Meaning.java` — Meaning
 
 **src\main\java\wordwizard\util/**
-- `FileUtil.java` — FileUtil, readFromFile, writeToFile
+- `FileUtil.java` — FileUtil, readResource, writeBinaryToFile
 
 **src\test\java\wordwizard/**
 - `AppTest.java` — AppTest
 
 ## Config
-- `docker-compose.yml`
+- `.claude\settings.json`
+- `docker\docker-compose.text.yml`
+- `docker\docker-compose.yml`
 - `src\main\resources\application.yaml`
 
 ## Docs
+- `CLAUDE.md`
 - `CODEBASE_INDEX.md`
 - `README.md`
 
 ---
-*Index: ~1.0k tokens · Full codebase: ~13.0k tokens · Saves ~92%*
+*Index: ~1.4k tokens · Full codebase: ~24.4k tokens · Saves ~94%*
