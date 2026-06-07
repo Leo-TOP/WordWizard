@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS definitions (
     word_id        INTEGER      NOT NULL REFERENCES words(id) ON DELETE CASCADE,
     definition     TEXT         NOT NULL,
     part_of_speech VARCHAR(50),
+    source         VARCHAR(255),
     example        TEXT,
     embedding      vector(384)
 );

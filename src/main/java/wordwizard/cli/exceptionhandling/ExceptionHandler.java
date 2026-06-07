@@ -5,12 +5,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class ExceptionHandler {
-    private static final
-    Map<Class<? extends Exception>,
-            Function<? extends Exception, String>
-            > EXCEPTION_MAP = new HashMap<>();
-
-    static {
-
-    }
+    private final Map<Class<? extends Exception>,
+            Function<? extends Exception, String>> EXCEPTION_MAP = new HashMap<>();
 }

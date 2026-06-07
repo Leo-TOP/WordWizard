@@ -3,8 +3,8 @@ package wordwizard.repository.database.repos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import wordwizard.repository.entities.Definition;
-import wordwizard.repository.entities.Word;
+import wordwizard.models.Definition;
+import wordwizard.models.Word;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,17 +12,15 @@ import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
-public class JdbcWordRepository implements WordRepository {
+public class JdbcWordRepository {
     private final JdbcTemplate jdbc;
 
-    @Override
     public Optional<Word> findByName(String word) {
         List<Map<String, Object>> rows = jdbc.queryForList(WORD_WITH_DEFINITIONS_SQL + " WHERE w.word = ? ORDER BY d.id", word);
         List<Word> words = accumulateRows(rows);
         return words.isEmpty() ? Optional.empty() : Optional.of(words.getFirst());
     }
 
-    @Override
     public List<Word> findByNames(List<String> names) {
         if (names == null || names.isEmpty()) return List.of();
         List<Map<String, Object>> rows = jdbc.queryForList(
@@ -32,7 +30,6 @@ public class JdbcWordRepository implements WordRepository {
         return accumulateRows(rows);
     }
 
-    @Override
     public List<Word> findFiltered(String theme, String partOfSpeech, String searchText) {
         String sql = """
                 SELECT w.id, w.word, w.is_user_defined, w.created_at,
@@ -56,7 +53,6 @@ public class JdbcWordRepository implements WordRepository {
         return accumulateRows(rows);
     }
 
-    @Override
     public List<Word> findAll() {
         List<Map<String, Object>> rows = jdbc.queryForList(
                 WORD_WITH_DEFINITIONS_SQL + " ORDER BY w.word, d.id"
@@ -64,7 +60,6 @@ public class JdbcWordRepository implements WordRepository {
         return accumulateRows(rows);
     }
 
-    @Override
     public boolean exists(String word) {
         Integer count = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM words WHERE word = ?", Integer.class, word);
@@ -75,7 +70,6 @@ public class JdbcWordRepository implements WordRepository {
     //  Write operations                                                    //
     // ------------------------------------------------------------------ //
 
-    @Override
     public Long save(Word word) {
         return jdbc.queryForObject(
                 "INSERT INTO words (word, is_user_defined) VALUES (?, ?) RETURNING id",
@@ -83,11 +77,6 @@ public class JdbcWordRepository implements WordRepository {
                 word.word(),
                 word.isUserDefined()
         );
-    }
-
-    @Override
-    public void delete(String word) {
-        jdbc.update("DELETE FROM words WHERE word = ?", word);
     }
 
     // ------------------------------------------------------------------ //

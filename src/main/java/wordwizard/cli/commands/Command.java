@@ -1,6 +1,6 @@
 package wordwizard.cli.commands;
 
-import wordwizard.businesslogic.CentralService;
+import wordwizard.service.CentralService;
 
 public abstract class Command {
     protected final CentralService mainGuy;

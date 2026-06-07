@@ -1,6 +1,6 @@
 package wordwizard.cli.commands;
 
-import wordwizard.businesslogic.CentralService;
+import wordwizard.service.CentralService;
 
 public class GetByDefinitionsCommand extends Command {
     protected GetByDefinitionsCommand(CentralService mainGuy) {

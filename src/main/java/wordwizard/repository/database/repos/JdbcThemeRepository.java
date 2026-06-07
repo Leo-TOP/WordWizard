@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import wordwizard.repository.entities.Theme;
+import wordwizard.models.Theme;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +12,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class JdbcThemeRepository implements ThemeRepository {
-
+public class JdbcThemeRepository {
     private final JdbcTemplate jdbc;
 
     private static final RowMapper<Theme> THEME_MAPPER = (rs, rowNum) -> new Theme(
@@ -23,7 +22,6 @@ public class JdbcThemeRepository implements ThemeRepository {
     );
 
 
-    @Override
     public List<Theme> findAll() {
         return jdbc.query(
                 """
@@ -37,7 +35,6 @@ public class JdbcThemeRepository implements ThemeRepository {
         );
     }
 
-    @Override
     public Optional<Theme> findByName(String name) {
         List<Theme> results = jdbc.query(
                 "SELECT id, name, word_count FROM themes WHERE name = ?",
@@ -49,7 +46,6 @@ public class JdbcThemeRepository implements ThemeRepository {
     }
 
 
-    @Override
     public Long getOrCreate(String name) {
         return findByName(name)
                 .map(Theme::id)
@@ -60,7 +56,6 @@ public class JdbcThemeRepository implements ThemeRepository {
                 ));
     }
 
-    @Override
     public void assignToDefinition(Long wordId, Long themeId, Long definitionId) {
         jdbc.update(
                 """

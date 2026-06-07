@@ -1,7 +1,7 @@
 package wordwizard.cli.commands;
 
 
-import wordwizard.businesslogic.CentralService;
+import wordwizard.service.CentralService;
 
 public class FilterByCommand extends Command {
     protected FilterByCommand(CentralService mainGuy) {
