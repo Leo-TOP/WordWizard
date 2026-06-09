@@ -1,18 +1,25 @@
 package wordwizard.service.validation.pos;
 
-import wordwizard.exceptions.InvalidWordRequestException;
+import wordwizard.exceptions.InvalidWordException;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public final class PosValidator {
-    private static final Set<String> SUPPORTED_POS = Set.of(
-            "noun", "verb", "adjective", "adverb",
-            "preposition", "conjunction", "pronoun", "interjection", "exclamation"
-    );
+    private PosValidator() {}
 
     public static void validatePos(String pos) {
-        if (pos != null && !SUPPORTED_POS.contains(pos)) {
-            throw new InvalidWordRequestException("Unknown part of speech: " + pos);
+        if (pos == null) return;
+
+        if (PartOfSpeech.fromString(pos).isEmpty()) {
+            throw new InvalidWordException(
+                "Unknown part of speech: \"" + pos + "\". Supported: " + supportedLabels());
         }
+    }
+
+    private static String supportedLabels() {
+        return Arrays.stream(PartOfSpeech.values())
+                .map(PartOfSpeech::getLabel)
+                .collect(Collectors.joining(", "));
     }
 }

@@ -3,7 +3,6 @@ package wordwizard.service.ai.mapping;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import wordwizard.service.ai.response.dto.BatchThemeResponse;
-import wordwizard.service.ai.response.dto.SingleThemeResponse;
 import wordwizard.service.ai.response.dto.ThemeAssignment;
 import wordwizard.models.Definition;
 import wordwizard.models.Word;
@@ -26,11 +25,6 @@ public class AIResponseDtoMapper {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-    }
-
-    public AssignmentInput toAssignment(SingleThemeResponse response, Word word, Definition def) {
-        String themeName = cleanThemeName(response.theme());
-        return new AssignmentInput(word.id(), def.id(), themeName);
     }
 
     private Optional<AssignmentInput> toOptionalAssignment(ThemeAssignment assignment, List<Word> words) {

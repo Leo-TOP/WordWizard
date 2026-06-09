@@ -17,7 +17,7 @@ public record Word(
                 : List.of();
     }
 
-    public static Word create(String word, List<Definition> definitions) {
+    public static Word createWordWithoutId(String word, List<Definition> definitions) {
         return new Word(null, word, LocalDateTime.now(), LocalDateTime.now(), definitions);
     }
 }

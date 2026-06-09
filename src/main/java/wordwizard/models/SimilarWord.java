@@ -2,5 +2,6 @@ package wordwizard.models;
 
 public record SimilarWord(
         String word,
-        String definition
+        String definition,
+        double distance
 ) {}

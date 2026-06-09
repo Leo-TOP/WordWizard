@@ -1,6 +1,4 @@
 package wordwizard.config;
-
-
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.ThinkingConfig;
@@ -18,25 +16,25 @@ import java.util.concurrent.Executors;
 @Configuration
 public class AppConfig {
 
-    @Value("${GOOGLE_GENAI_API_KEY}")
+    @Value("${ai.google.genai.api-key}")
     private String apiKey;
+
+
+    @Bean
+    public GenerateContentConfig geminiGenerationConfig() {
+        return GenerateContentConfig.builder()
+                .maxOutputTokens(2048)
+                .responseMimeType("application/json")
+                .thinkingConfig(ThinkingConfig.builder().thinkingBudget(512).build())
+                .build();
+    }
 
     @Bean
     public Client geminiClient() {
-            ThinkingConfig thinkingConfig = ThinkingConfig.builder()
-                    .thinkingBudget(512)
-                    .build();
-
-            GenerateContentConfig config = GenerateContentConfig.builder()
-                    .maxOutputTokens(2048)
-                    .thinkingConfig(thinkingConfig)
-                    .build();
-
-            return Client.builder()
-                    .apiKey(apiKey)
-                    .generateContentConfig(config)
-                    .build();
-        }
+        return Client.builder()
+                .apiKey(apiKey)
+                .build();
+    }
 
     @Bean
     public RestTemplate restTemplate() {
@@ -53,9 +51,14 @@ public class AppConfig {
                 .create();
     }
 
-    @Bean
-    public ExecutorService wordImportExecutor() {
-        return Executors.newFixedThreadPool(5);
+    @Bean(destroyMethod = "shutdown")
+    public ExecutorService wordImportExecutor(
+            @Value("${word.import.pool-size:5}") int poolSize) {
+        return Executors.newFixedThreadPool(poolSize, r -> {
+            Thread t = new Thread(r);
+            t.setName("word-import-" + t.threadId());
+            t.setDaemon(true);
+            return t;
+        });
     }
-
 }

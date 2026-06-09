@@ -22,8 +22,3 @@ spring:
             padding: true
         onnx:
           modelUri: classpath:onnx/all-MiniLM-L6-v2/model.onnx
-    vectorstore:
-      pgvector:
-        index-type: HNSW
-        distance-type: COSINE_DISTANCE
-        dimensions: 384

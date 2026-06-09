@@ -10,6 +10,7 @@ import wordwizard.models.Word;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DocxExporter implements Exporter {
@@ -20,23 +21,21 @@ public class DocxExporter implements Exporter {
     }
 
     @Override
-    public byte[] export(List<Word> words) {
+    public byte[] export(Map<String, List<Word>> themedWords) {
         try (XWPFDocument doc = new XWPFDocument();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
             addTitle(doc, "Vocabulary Export");
 
-            for (Word word : words) {
-                addHeading(doc, word.word());
-                for (Definition def : word.definitions()) {
-                    addDefinitionLine(doc, def);
+            for (var entry : themedWords.entrySet()) {
+                addHeading1(doc, entry.getKey());
+                for (Word word : entry.getValue()) {
+                    addWord(doc, word);
                 }
-                doc.createParagraph();
             }
 
             doc.write(out);
             return out.toByteArray();
-
         } catch (IOException e) {
             throw new RuntimeException("Failed to create DOCX", e);
         }
@@ -48,7 +47,22 @@ public class DocxExporter implements Exporter {
         p.createRun().setText(text);
     }
 
-    private void addHeading(XWPFDocument doc, String text) {
+
+    private void addHeading1(XWPFDocument doc, String text) {
+        XWPFParagraph p = doc.createParagraph();
+        p.setStyle("Heading1");
+        p.createRun().setText(text);
+    }
+
+    private void addWord(XWPFDocument doc, Word word){
+        addHeading2(doc, word.word());
+        for (Definition def : word.definitions()) {
+            addDefinitionLine(doc, def);
+        }
+        doc.createParagraph();
+    }
+
+    private void addHeading2(XWPFDocument doc, String text) {
         XWPFParagraph p = doc.createParagraph();
         p.setStyle("Heading2");
         p.createRun().setText(text);

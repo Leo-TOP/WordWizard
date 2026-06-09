@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import wordwizard.models.Definition;
 import wordwizard.models.SimilarWord;
+import wordwizard.repository.database.helpers.CastHelper;
 
 import java.util.List;
 
@@ -26,20 +27,22 @@ public class JdbcDefinitionRepository {
 
     private static final RowMapper<SimilarWord> SIMILAR_WORD_MAPPER = (rs, rowNum) -> new SimilarWord(
             rs.getString("word"),
-            rs.getString("definition")
+            rs.getString("definition"),
+            rs.getDouble("distance")
     );
 
 
     public Long save(Long wordId, Definition definition) {
         return jdbc.queryForObject(
                 """
-                INSERT INTO definitions (word_id, definition, part_of_speech, example)
-                VALUES (?, ?, ?, ?) RETURNING id
+                INSERT INTO definitions (word_id, definition, part_of_speech, source, example)
+                VALUES (?, ?, ?, ?, ?) RETURNING id
                 """,
                 Long.class,
                 wordId,
                 definition.text(),
                 definition.partOfSpeech(),
+                definition.source(),
                 definition.example()
         );
     }
@@ -47,7 +50,7 @@ public class JdbcDefinitionRepository {
     public void updateEmbedding(Long definitionId, float[] embedding) {
         jdbc.update(
                 "UPDATE definitions SET embedding = ? WHERE id = ?",
-                new PGvector(embedding),
+                CastHelper.toPGvector(embedding),
                 definitionId
         );
     }
@@ -69,7 +72,7 @@ public class JdbcDefinitionRepository {
     public List<SimilarWord> findByEmbedding(float[] queryVector, int limit) {
         return jdbc.query(
                 """
-                SELECT w.word <=> ? AS distance
+                SELECT w.word, d.definition, d.embedding <=> ? AS distance
                 FROM definitions d
                 JOIN words w ON d.word_id = w.id
                 WHERE d.embedding IS NOT NULL
@@ -77,26 +80,49 @@ public class JdbcDefinitionRepository {
                 LIMIT ?
                 """,
                 SIMILAR_WORD_MAPPER,
-                new PGvector(queryVector),
+                CastHelper.toPGvector(queryVector),
                 limit
         );
     }
 
-    public List<SimilarWord> findSimilarTo(String excludeWord, float[] queryVector, int limit) {
+    public List<SimilarWord> findSimilarTo(String excludeWord, float[] queryVector, String pos, int limit) {
         return jdbc.query(
                 """
-                SELECT w.word, d.definition <=> ? AS distance
+                SELECT w.word, d.definition, d.embedding <=> ? AS distance
                 FROM definitions d
                 JOIN words w ON d.word_id = w.id
                 WHERE w.word != ?
                   AND d.embedding IS NOT NULL
+                  AND (CAST(? AS TEXT) IS NULL OR d.part_of_speech = ?)
                 ORDER BY distance
                 LIMIT ?
                 """,
                 SIMILAR_WORD_MAPPER,
-                new PGvector(queryVector),
+                CastHelper.toPGvector(queryVector),
                 excludeWord,
+                pos, pos,
                 limit
         );
+    }
+
+    public boolean findSimilarDefinition(Long wordId, float[] newEmbedding, double threshold) {
+        String sql = """
+        SELECT COUNT(*)
+        FROM definitions
+        WHERE word_id = ?
+          AND embedding IS NOT NULL
+          AND embedding <=> ?::vector < ?
+        LIMIT 1
+        """;
+
+        Integer count = jdbc.queryForObject(
+                sql,
+                Integer.class,
+                wordId,
+                new PGvector(newEmbedding),
+                threshold
+        );
+
+        return count != null && count > 0;
     }
 }

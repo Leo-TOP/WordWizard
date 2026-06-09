@@ -6,8 +6,6 @@ public record VocabularyStats(
         int totalWords,
         int totalDefinitions,
         double avgDefinitionsPerWord,
-        int wordsFullyEmbedded,
-        int embeddingCoveragePercent,
         Map<String, Integer> wordsByPos,
         Map<String, Integer> wordsByTheme,
         int totalThemes,

@@ -1,4 +1,4 @@
-package wordwizard.service.export;
+package wordwizard.service.export.fileprocessing;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

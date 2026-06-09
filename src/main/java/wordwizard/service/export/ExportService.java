@@ -8,10 +8,13 @@ import wordwizard.service.export.dto.ExportRequest;
 import wordwizard.service.export.exporters.Exporter;
 import wordwizard.service.export.exporters.ExporterFactory;
 import wordwizard.models.Word;
+import wordwizard.service.export.fileprocessing.ExportFileProcessor;
 import wordwizard.util.FileUtil;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,20 +26,22 @@ public class ExportService {
     public void export(ExportRequest request) {
         Exporter exporter = exporterFactory.getExporter(request.format());
 
-        List<Word> words = dictionaryQueryService.getWords(request.filterRequest());
-        if (words.isEmpty()) {
+        Map<String, List<Word>> groupedWords = dictionaryQueryService.getWords(request.filterRequest());
+        if (groupedWords.isEmpty()) {
             log.warn("No words found for the given filters — export skipped.");
             return;
         }
 
-        byte[] content = exporter.export(words);
+        byte[] content = exporter.export(groupedWords);
 
         var fileProcessor = new ExportFileProcessor(request.outputPath(), request.format());
-        fileProcessor.validate();
         Path filePath = fileProcessor.process();
         FileUtil.writeBinaryToFile(filePath, content);
 
         log.info("Exported {} word(s) to {} (format: {})",
-                words.size(), request.outputPath(), request.format());
+               groupedWords.values().
+                       stream().
+                       mapToLong(Collection::size).
+                       sum(), request.outputPath(), request.format());
     }
 }

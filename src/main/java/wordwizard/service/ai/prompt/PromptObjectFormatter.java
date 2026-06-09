@@ -42,12 +42,4 @@ class PromptObjectFormatter {
         }
         return String.format("  [%d] %s\n", index, def.text());
     }
-
-    public String formatDefinition(Definition def) {
-        String pos = def.partOfSpeech();
-        if (pos != null && !pos.isEmpty()) {
-            return String.format("%s (%s)", def.text(), pos);
-        }
-        return def.text();
-    }
 }

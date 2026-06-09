@@ -25,10 +25,10 @@ public class JdbcThemeRepository {
     public List<Theme> findAll() {
         return jdbc.query(
                 """
-                SELECT t.id, t.name, t.description, COUNT(DISTINCT wt.word_id) AS word_count
+                SELECT t.id, t.name, COUNT(DISTINCT wt.word_id) AS word_count
                 FROM themes t
                 LEFT JOIN word_themes wt ON t.id = wt.theme_id
-                GROUP BY t.id, t.name, t.description
+                GROUP BY t.id, t.name
                 ORDER BY t.name
                 """,
                 THEME_MAPPER
@@ -37,7 +37,7 @@ public class JdbcThemeRepository {
 
     public Optional<Theme> findByName(String name) {
         List<Theme> results = jdbc.query(
-                "SELECT id, name, word_count FROM themes WHERE name = ?",
+                "SELECT id, name, 0 AS word_count FROM themes WHERE name = ?",
                 THEME_MAPPER,
                 name
         );

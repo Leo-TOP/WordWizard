@@ -1,5 +1,5 @@
-package wordwizard.service.save;
+package wordwizard.service.save.dto;
 
 public record UserWordRequest(String word,
                               String definition,
-                              String pos) {}
+                              String partOfSpeech) {}

@@ -7,12 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import wordwizard.service.ai.prompt.PromptBuilder;
 import wordwizard.service.ai.response.AIResponseProcessor;
 import wordwizard.service.ai.response.dto.BatchThemeResponse;
-import wordwizard.service.ai.response.dto.SingleThemeResponse;
 import wordwizard.service.ai.mapping.AIResponseDtoMapper;
 import wordwizard.service.ai.mapping.AssignmentInput;
 import wordwizard.infrastructure.GeminiChatClient;
 import wordwizard.repository.database.DatabaseManager;
-import wordwizard.models.Definition;
 import wordwizard.models.Theme;
 import wordwizard.models.Word;
 
@@ -40,18 +38,6 @@ public class ThemesService {
             inputs.forEach(this::saveAssignment);
 
             log.info("Applied {} theme assignments for {} words", inputs.size(), words.size());
-    }
-
-    @Transactional
-    public String assignThemeToDefinition(Word word, Definition def) {
-        List<Theme> existingThemes = repository.findAllThemes();
-        String prompt = promptBuilder.buildSingleWordPrompt(word, def, existingThemes);
-        SingleThemeResponse singleResponse = responseProcessor.parseSingleResponse(
-                aiClient.generateContent(prompt));
-        AssignmentInput input = mapper.toAssignment(singleResponse, word, def);
-        saveAssignment(input);
-
-        return input.themeName();
     }
 
     private void saveAssignment(AssignmentInput input) {

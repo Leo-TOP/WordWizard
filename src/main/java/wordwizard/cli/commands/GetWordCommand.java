@@ -1,10 +1,9 @@
 package wordwizard.cli.commands;
 
-
 import wordwizard.service.CentralService;
 
-public class FilterByCommand extends Command {
-    protected FilterByCommand(CentralService mainGuy) {
+public class GetWordCommand extends Command {
+    protected GetWordCommand(CentralService mainGuy) {
         super(mainGuy);
     }
 

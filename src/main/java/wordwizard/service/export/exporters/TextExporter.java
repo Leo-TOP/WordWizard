@@ -6,28 +6,36 @@ import wordwizard.models.Word;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class TextExporter implements Exporter {
-
     @Override
     public String getFormat() {
         return "text";
     }
 
     @Override
-    public byte[] export(List<Word> words) {
+    public byte[] export(Map<String, List<Word>> themedWords) {
         StringBuilder sb = new StringBuilder("Vocabulary Export\n\n");
 
-        for (Word word : words) {
-            sb.append(word.word()).append("\n");
-            for (Definition def : word.definitions()) {
-                appendDefinition(sb, def);
-            }
-            sb.append("\n");
-        }
+        themedWords.forEach((theme, words) -> appendThemedGroup(sb, theme, words));
 
         return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private void appendThemedGroup(StringBuilder sb, String theme , List<Word> words) {
+        sb.append("=== ").append(theme).append(" ===\n\n");
+        words.forEach(w -> appendWord(sb, w));
+        sb.append("\n");
+    }
+
+    private void appendWord(StringBuilder sb, Word word) {
+        sb.append(word.word()).append("\n");
+        for (Definition def : word.definitions()) {
+            appendDefinition(sb, def);
+        }
+        sb.append("\n");
     }
 
     private void appendDefinition(StringBuilder sb, Definition def) {

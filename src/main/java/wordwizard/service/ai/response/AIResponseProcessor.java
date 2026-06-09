@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import wordwizard.service.ai.response.dto.BatchThemeResponse;
-import wordwizard.service.ai.response.dto.SingleThemeResponse;
 
 import java.util.ArrayList;
 
@@ -22,15 +21,6 @@ public class AIResponseProcessor {
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse AI response: {}", rawResponse, e);
             return new BatchThemeResponse(new ArrayList<>());
-        }
-    }
-
-    public SingleThemeResponse parseSingleResponse(String rawResponse) {
-        try {
-            return gson.fromJson(rawResponse.trim(), SingleThemeResponse.class);
-        } catch (JsonSyntaxException e) {
-            log.error("Failed to parse AI response: {}", rawResponse, e);
-            return new SingleThemeResponse("unclassified");
         }
     }
 }

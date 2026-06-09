@@ -1,18 +1,18 @@
 package wordwizard.service.wordsfetching;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import wordwizard.models.Definition;
-import wordwizard.repository.externaldictionaries.ApiDtoMapper;
-import wordwizard.service.embedding.EmbeddingService;
-import wordwizard.service.themes.ThemesService;
 import wordwizard.exceptions.WordNotFoundException;
-import wordwizard.repository.database.DatabaseManager;
+import wordwizard.models.Definition;
 import wordwizard.models.Word;
+import wordwizard.repository.database.DatabaseManager;
+import wordwizard.repository.externaldictionaries.dto.ApiDtoMapper;
 import wordwizard.repository.externaldictionaries.DictionaryApiClient;
 import wordwizard.repository.externaldictionaries.dto.DictionaryApiResponse;
+import wordwizard.service.embedding.EmbeddingService;
+import wordwizard.service.themes.ThemesService;
 import wordwizard.service.wordsfetching.dto.WordRequest;
 
 import java.util.List;
@@ -20,68 +20,85 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class WordsImportingService {
-        private final DictionaryApiClient apiClient;
-        private final DatabaseManager dbManager;
-        private final ApiDtoMapper apiMapper;
-        private final ThemesService themesService;
-        private final EmbeddingService embeddingService;
-        private final ExecutorService pool;
 
-        public Word fetchAndSaveWord(WordRequest wordRequest) {
-            Word savedWord = processWord(wordRequest.word());
+    private final DictionaryApiClient apiClient;
+    private final DatabaseManager dbManager;
+    private final ApiDtoMapper apiMapper;
+    private final ThemesService themesService;
+    private final EmbeddingService embeddingService;
 
-            themesService.assignThemesToWords(List.of(savedWord));
+    @Qualifier("wordImportExecutor")
+    private final ExecutorService pool;
 
-            return applyFilters(savedWord, wordRequest.partOfSpeech(), wordRequest.limit());
-        }
+    public WordsImportingService(DictionaryApiClient apiClient,
+                                 DatabaseManager dbManager,
+                                 ApiDtoMapper apiMapper,
+                                 ThemesService themesService,
+                                 EmbeddingService embeddingService, ExecutorService pool) {
+        this.apiClient = apiClient;
+        this.dbManager = dbManager;
+        this.apiMapper = apiMapper;
+        this.themesService = themesService;
+        this.embeddingService = embeddingService;
+        this.pool = pool;
+    }
 
-        public List<Word> fetchAndSaveWords(List<String> words) {
-            List<CompletableFuture<Word>> futures = words.stream()
-                    .map(word -> CompletableFuture.supplyAsync(
-                            () -> processWord(word),
-                            pool
-                    ))
-                    .toList();
+    public Word fetchAndSaveWord(WordRequest wordRequest) {
+        Word savedWord = processWord(wordRequest.word());
+        themesService.assignThemesToWords(List.of(savedWord));
+        return applyFilters(savedWord, wordRequest.partOfSpeech(), wordRequest.limit());
+    }
 
-            List<Word> processedWords = futures.stream()
-                    .map(f -> {
-                        try { return f.join(); }
-                        catch (Exception e) { log.warn("Failed to import word: {}", e.getMessage()); return null; }
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
+    public List<Word> fetchAndSaveWords(List<String> words) {
+        List<String> unique = words.stream().distinct().toList();
 
-            themesService.assignThemesToWords(processedWords);
+        List<CompletableFuture<Word>> futures = unique.stream()
+                .map(word -> CompletableFuture
+                        .supplyAsync(() -> processWord(word), pool)
+                        .orTimeout(30, TimeUnit.SECONDS))
+                .toList();
 
-            return processedWords;
-        }
+        List<Word> processedWords = futures.stream()
+                .map(f -> {
+                    try {
+                        return f.join();
+                    } catch (Exception e) {
+                        Throwable cause = e.getCause() != null ? e.getCause() : e;
+                        log.warn("Failed to import word: {}", cause.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
 
-    private Word processWord(String word){
+        themesService.assignThemesToWords(processedWords);
+        return processedWords;
+    }
+
+    private Word processWord(String word) {
         Optional<Word> existing = dbManager.findByWord(word);
-
-        if (existing.isPresent()) {
-            return existing.get();
-        }
+        if (existing.isPresent()) return existing.get();
 
         DictionaryApiResponse response = apiClient.fetchWord(word);
-
-        if (response == null) {
-            throw new WordNotFoundException(word);
-        }
+        if (response == null) throw new WordNotFoundException(word);
 
         Word newWord = apiMapper.mapToWord(response);
 
-        Word savedWord = dbManager.saveWord(newWord);
-        embeddingService.generateAndSaveEmbeddings(savedWord);
-
-        return savedWord;
+        try {
+            Word savedWord = dbManager.saveWord(newWord);
+            embeddingService.generateAndSaveEmbeddingsForWord(savedWord);
+            return savedWord;
+        } catch (DataIntegrityViolationException e) {
+            log.debug("Word \"{}\" was saved concurrently, loading from DB", word);
+            return dbManager.findByWord(word)
+                    .orElseThrow(() -> new WordNotFoundException(word));
+        }
     }
-
 
     private Word applyFilters(Word word, String partOfSpeech, Integer limit) {
         List<Definition> defs = word.definitions();

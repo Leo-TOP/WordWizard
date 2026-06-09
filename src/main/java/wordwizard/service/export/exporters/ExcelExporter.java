@@ -9,6 +9,7 @@ import wordwizard.models.Word;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class ExcelExporter implements Exporter {
@@ -22,21 +23,26 @@ public class ExcelExporter implements Exporter {
     }
 
     @Override
-    public byte[] export(List<Word> words) {
+    public byte[] export(Map<String, List<Word>> themedWords) {
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-            Sheet sheet = workbook.createSheet("Vocabulary");
-            createHeaderRow(workbook, sheet);
-            fillDataRows(sheet, words);
-            autoSizeColumns(sheet);
+            for (var entry : themedWords.entrySet()) {
+                Sheet sheet = workbook.createSheet(sanitizeSheetName(entry.getKey()));
+                createHeaderRow(workbook, sheet);
+                fillDataRows(sheet, entry.getValue());
+                autoSizeColumns(sheet);
+            }
 
             workbook.write(out);
             return out.toByteArray();
-
         } catch (IOException e) {
             throw new RuntimeException("Failed to create Excel file", e);
         }
+    }
+
+    private String sanitizeSheetName(String name) {
+        return name.replaceAll("[\\[\\]*?:/\\\\]", "").substring(0, Math.min(31, name.length()));
     }
 
     private void createHeaderRow(Workbook workbook, Sheet sheet) {
@@ -61,8 +67,8 @@ public class ExcelExporter implements Exporter {
                 row.createCell(0).setCellValue(word.word());
                 row.createCell(1).setCellValue(def.partOfSpeech() != null ? def.partOfSpeech() : "");
                 row.createCell(2).setCellValue(def.text());
-                row.createCell(4).setCellValue(def.source());
-                row.createCell(3).setCellValue(def.example() != null ? def.example() : "");
+                row.createCell(3).setCellValue(def.source() != null ? def.source() : "");
+                row.createCell(4).setCellValue(def.example() != null ? def.example() : "");
             }
         }
     }

@@ -38,8 +38,7 @@ dependencies {
 
 
     implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
-    implementation 'org.springframework.ai:spring-ai-pgvector-store'
+    implementation 'com.pgvector:pgvector:0.1.4'
 
     implementation 'com.google.genai:google-genai:1.0.0'
 
@@ -49,13 +48,13 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
 
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
     implementation 'org.apache.poi:poi:5.2.5'
-    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.4.0'
 }
 
 test {

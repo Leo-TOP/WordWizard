@@ -10,11 +10,29 @@ public record Definition(
 ) {
 
     public static Definition create(
+            Long id,
+            String text,
+            String partOfSpeech,
+            String source,
+            String example
+    ) {
+        return new Definition(id, text, partOfSpeech, source, example, null);
+    }
+
+    public static Definition createWithoutId(
             String text,
             String partOfSpeech,
             String source,
             String example
     ) {
         return new Definition(null, text, partOfSpeech, source, example, null);
+    }
+
+    public static Definition createWithoutExampleAndId(
+            String text,
+            String partOfSpeech,
+            String source
+    ) {
+        return new Definition(null, text, partOfSpeech, source, null, null);
     }
 }

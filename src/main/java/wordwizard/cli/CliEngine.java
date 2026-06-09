@@ -6,7 +6,7 @@ import wordwizard.util.FileUtil;
 @Controller
 public class CliEngine {
     private static final String INTRO;
-    private static final String INTRO_PATH = "src/main/resources/appIntro.txt";
+    private static final String INTRO_PATH = "clifiles/appIntro.txt";
 
     static {
         INTRO = FileUtil.readResource(INTRO_PATH);

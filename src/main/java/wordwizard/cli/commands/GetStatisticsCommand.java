@@ -2,8 +2,8 @@ package wordwizard.cli.commands;
 
 import wordwizard.service.CentralService;
 
-public class GetCommand extends Command {
-    protected GetCommand(CentralService mainGuy) {
+public class GetStatisticsCommand extends Command{
+    protected GetStatisticsCommand(CentralService mainGuy) {
         super(mainGuy);
     }
 

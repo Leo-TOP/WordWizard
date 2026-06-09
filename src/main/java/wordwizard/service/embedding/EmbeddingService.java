@@ -19,15 +19,19 @@ public class EmbeddingService {
         return embeddingModel.embed(text);
     }
 
-    public void generateAndSaveEmbeddings(Word word) {
+    public void generateAndSaveEmbeddingsForWord(Word word) {
         for (Definition def : word.definitions()) {
             if (def.embedding() != null) continue;
-            try {
-                float[] vector = getEmbedding(def.text());
-                repository.updateDefinitionEmbedding(def.id(), vector);
-            } catch (Exception e) {
-                log.warn("Failed embedding for definition {}: {}", def.id(), e.getMessage());
-            }
+            generateAndSaveEmbeddingForDefinition(def);
+        }
+    }
+
+    public void generateAndSaveEmbeddingForDefinition(Definition def) {
+        try {
+            float[] vector = getEmbedding(def.text());
+            repository.updateDefinitionEmbedding(def.id(), vector);
+        } catch (Exception e) {
+            log.warn("Failed embedding for definition {}: {}", def.id(), e.getMessage());
         }
     }
 }

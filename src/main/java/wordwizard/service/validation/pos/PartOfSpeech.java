@@ -1,10 +1,12 @@
 package wordwizard.service.validation.pos;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+@Getter
 @RequiredArgsConstructor
 public enum PartOfSpeech {
     NOUN("noun"), VERB("verb"), ADJECTIVE("adjective"),
