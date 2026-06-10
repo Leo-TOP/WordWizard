@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 @Configuration
 public class AppConfig {
 
-    @Value("${ai.google.genai.api-key}")
+    @Value("${spring.ai.google.genai.api-key}")
     private String apiKey;
 
 
@@ -31,6 +31,10 @@ public class AppConfig {
 
     @Bean
     public Client geminiClient() {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(
+                    "Gemini API key is empty — set GOOGLE_GENAI_API_KEY in secret/.env");
+        }
         return Client.builder()
                 .apiKey(apiKey)
                 .build();

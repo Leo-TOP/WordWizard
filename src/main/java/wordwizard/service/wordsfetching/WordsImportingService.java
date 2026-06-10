@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import wordwizard.exceptions.BatchImportException;
 import wordwizard.exceptions.WordNotFoundException;
 import wordwizard.models.Definition;
 import wordwizard.models.Word;
@@ -15,16 +16,20 @@ import wordwizard.service.embedding.EmbeddingService;
 import wordwizard.service.themes.ThemesService;
 import wordwizard.service.wordsfetching.dto.WordRequest;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
 public class WordsImportingService {
+    private static final int IMPORT_TIMEOUT_SECONDS = 30;
 
     private final DictionaryApiClient apiClient;
     private final DatabaseManager dbManager;
@@ -60,24 +65,37 @@ public class WordsImportingService {
         List<CompletableFuture<Word>> futures = unique.stream()
                 .map(word -> CompletableFuture
                         .supplyAsync(() -> processWord(word), pool)
-                        .orTimeout(30, TimeUnit.SECONDS))
+                        .orTimeout(IMPORT_TIMEOUT_SECONDS, TimeUnit.SECONDS))
                 .toList();
 
-        List<Word> processedWords = futures.stream()
-                .map(f -> {
-                    try {
-                        return f.join();
-                    } catch (Exception e) {
-                        Throwable cause = e.getCause() != null ? e.getCause() : e;
-                        log.warn("Failed to import word: {}", cause.getMessage());
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toList();
+        List<Word> processedWords = new ArrayList<>();
+        Map<String, String> failures = new LinkedHashMap<>();
+
+        for (int i = 0; i < futures.size(); i++) {
+            String word = unique.get(i);
+            try {
+                processedWords.add(futures.get(i).join());
+            } catch (Exception e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                log.warn("Failed to import word '{}': {}", word, cause.getMessage());
+                failures.put(word, describeFailure(cause));
+            }
+        }
 
         themesService.assignThemesToWords(processedWords);
+
+        if (!failures.isEmpty()) {
+            throw new BatchImportException(
+                    processedWords.stream().map(Word::word).toList(), failures);
+        }
         return processedWords;
+    }
+
+    private String describeFailure(Throwable cause) {
+        if (cause instanceof TimeoutException) {
+            return "import timed out after " + IMPORT_TIMEOUT_SECONDS + " seconds";
+        }
+        return cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
     }
 
     private Word processWord(String word) {
@@ -85,7 +103,9 @@ public class WordsImportingService {
         if (existing.isPresent()) return existing.get();
 
         DictionaryApiResponse response = apiClient.fetchWord(word);
-        if (response == null) throw new WordNotFoundException(word);
+        if (response == null) {
+            throw new WordNotFoundException("Word \"" + word + "\" was not found in the dictionary");
+        }
 
         Word newWord = apiMapper.mapToWord(response);
 
@@ -96,7 +116,8 @@ public class WordsImportingService {
         } catch (DataIntegrityViolationException e) {
             log.debug("Word \"{}\" was saved concurrently, loading from DB", word);
             return dbManager.findByWord(word)
-                    .orElseThrow(() -> new WordNotFoundException(word));
+                    .orElseThrow(() -> new WordNotFoundException(
+                            "Word \"" + word + "\" disappeared after a concurrent save"));
         }
     }
 
@@ -115,7 +136,7 @@ public class WordsImportingService {
 
         if (defs.isEmpty() && partOfSpeech != null) {
             throw new WordNotFoundException(
-                    word.word() + " has no definitions for part of speech: " + partOfSpeech);
+                    "\"" + word.word() + "\" has no definitions for part of speech \"" + partOfSpeech + "\"");
         }
 
         return new Word(word.id(), word.word(), word.createdAt(), word.updatedAt(), defs);

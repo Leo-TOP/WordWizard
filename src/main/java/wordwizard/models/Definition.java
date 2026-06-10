@@ -28,11 +28,10 @@ public record Definition(
         return new Definition(null, text, partOfSpeech, source, example, null);
     }
 
-    public static Definition createWithoutExampleAndId(
+    public static Definition createWithOnlyText(
             String text,
-            String partOfSpeech,
             String source
     ) {
-        return new Definition(null, text, partOfSpeech, source, null, null);
+        return new Definition(null, text, null, source, null, null);
     }
 }

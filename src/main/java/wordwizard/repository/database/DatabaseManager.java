@@ -42,22 +42,18 @@ public class DatabaseManager {
         definitionRepository.updateEmbedding(id, vector);
     }
 
-    public List<SimilarWord> getSimilarTo(String word, float[] vector, String pos, Integer limit) {
+    public List<SimilarWord> getSimilarTo(String word, float[] vector, String pos, int limit) {
         return definitionRepository.findSimilarTo(word, vector, pos, limit);
     }
 
-    public List<SimilarWord> getSimilarByEmbedding(float[] vector, Integer limit) {
+    public List<SimilarWord> getSimilarByEmbedding(float[] vector, int limit) {
         return definitionRepository.findByEmbedding(vector, limit);
-    }
-
-    public Map<String, List<Word>> getAllWordsGroupedByTheme() {
-        return wordRepository.findGroupedByTheme(null, null, null);
     }
 
     public Map<String, List<Word>> findFilteredWordsGroupedByTheme(String theme,
                                                                    String partOfSpeech,
                                                                    String startsWith) {
-        return wordRepository.findGroupedByTheme(theme, partOfSpeech, startsWith);
+        return wordRepository.findFilteredGroupedByTheme(theme, partOfSpeech, startsWith);
     }
 
     public VocabularyStats getStatistics() { return statisticsRepository.getStatistics(); }

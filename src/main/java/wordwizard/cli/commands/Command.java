@@ -1,13 +1,9 @@
 package wordwizard.cli.commands;
 
-import wordwizard.service.CentralService;
+import wordwizard.cli.commands.dto.CommandContext;
 
-public abstract class Command {
-    protected final CentralService mainGuy;
+public interface Command {
+    String commandName();
 
-    protected Command(CentralService mainGuy) {
-        this.mainGuy = mainGuy;
-    }
-
-    public abstract void execute();
+    void execute(CommandContext commandContext);
 }

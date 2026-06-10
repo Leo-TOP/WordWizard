@@ -1,6 +1,7 @@
 package wordwizard.util;
 
 import org.springframework.core.io.ClassPathResource;
+import wordwizard.exceptions.FileException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +17,7 @@ public final class FileUtil {
             ClassPathResource resource = new ClassPathResource(resourcePath);
             return resource.getContentAsString(StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read resource: " + resourcePath, e);
+            throw new FileException("Failed to read resource \"" + resourcePath + "\": " + e.getMessage(), e);
         }
     }
 
@@ -24,7 +25,7 @@ public final class FileUtil {
         try{
             Files.write(filePath, data);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new FileException("Failed to write file \"" + filePath + "\": " + e.getMessage(), e);
         }
     }
 }

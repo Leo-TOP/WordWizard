@@ -2,6 +2,7 @@ package wordwizard.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import wordwizard.exceptions.InvalidRequestException;
 import wordwizard.models.SimilarWord;
 import wordwizard.models.VocabularyStats;
 import wordwizard.service.dictrequesting.DictionaryQueryService;
@@ -32,25 +33,31 @@ public class CentralService {
         private final WordsImportingService wordsImportingService;
         private final SimilarityService similarityService;
         private final SaveService saveService;
+        private final TextValidator textValidator;
+        private final PosValidator posValidator;
 
         public Word getWord(WordRequest request) {
-                TextValidator.validateWords(List.of(request.word()));
-                PosValidator.validatePos(request.partOfSpeech());
+                requireRequest(request, "word request");
+                textValidator.validateWords(List.of(request.word()));
+                posValidator.validatePos(request.partOfSpeech());
 
                 return wordsImportingService.fetchAndSaveWord(request);
         }
 
         public List<Word> getWords(List<String> words) {
-                TextValidator.validateWords(words);
+                requireNonEmpty(words, "word");
+                textValidator.validateWords(words);
 
                 return wordsImportingService.fetchAndSaveWords(words);
         }
 
-        public Map<String, List<Word>> getWordsFromUserDictionary(FilterRequest request) {
-                TextValidator.validateStart(request.startsWith());
-                PosValidator.validatePos(request.partOfSpeech());
+        public Map<String, List<Word>> filter(FilterRequest request) {
+                requireRequest(request, "filter request");
+                textValidator.validateStart(request.startsWith());
+                textValidator.validateTheme(request.theme());
+                posValidator.validatePos(request.partOfSpeech());
 
-                return dictionaryQueryService.getWords(request);
+                return dictionaryQueryService.getFilteredWords(request);
         }
 
         public List<Theme> getAllThemes() {
@@ -58,30 +65,34 @@ public class CentralService {
         }
 
         public List<SimilarWord> findByDefinition(SimilarWordRequestForDefinition request) {
-                TextValidator.validateDefinitions(List.of(request.definition()));
+                requireRequest(request, "definition request");
+                textValidator.validateDefinitions(List.of(request.definition()));
                 return similarityService.findByDescription(request);
         }
 
         public List<SimilarWord> findSimilar(SimilarWordRequestForWord request) {
-                TextValidator.validateWords(List.of(request.word()));
-                PosValidator.validatePos(request.partOfSpeech());
+                requireRequest(request, "similarity request");
+                textValidator.validateWords(List.of(request.word()));
+                posValidator.validatePos(request.partOfSpeech());
 
                 return similarityService.findSimilarToWord(request);
         }
 
         public List<SaveResult> addUserWords(List<UserWordRequest> requests) {
-                TextValidator.validateWords(requests.stream().map(UserWordRequest::word).toList());
-                TextValidator.validateDefinitions(requests.stream().map(UserWordRequest::definition).toList());
-                requests.forEach(r -> PosValidator.validatePos(r.partOfSpeech()));
+                requireNonEmpty(requests, "word–definition pair");
+                textValidator.validateWords(requests.stream().map(UserWordRequest::word).toList());
+                textValidator.validateDefinitions(requests.stream().map(UserWordRequest::definition).toList());
 
                 return saveService.saveWords(requests);
         }
 
         public void exportWords(ExportRequest exportRequest) {
+                requireRequest(exportRequest, "export request");
                 FilterRequest f = exportRequest.filterRequest();
                 if (f != null) {
-                        TextValidator.validateStart(f.startsWith());
-                        PosValidator.validatePos(f.partOfSpeech());
+                        textValidator.validateStart(f.startsWith());
+                        textValidator.validateTheme(f.theme());
+                        posValidator.validatePos(f.partOfSpeech());
                 }
 
                 exportService.export(exportRequest);
@@ -89,5 +100,17 @@ public class CentralService {
 
         public VocabularyStats getStatistics() {
                 return dictionaryQueryService.getStatistics();
+        }
+
+        private static void requireRequest(Object request, String name) {
+                if (request == null) {
+                        throw new InvalidRequestException("The " + name + " must not be null");
+                }
+        }
+
+        private static void requireNonEmpty(List<?> items, String itemName) {
+                if (items == null || items.isEmpty()) {
+                        throw new InvalidRequestException("At least one " + itemName + " is required");
+                }
         }
 }

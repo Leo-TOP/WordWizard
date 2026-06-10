@@ -16,17 +16,21 @@ import wordwizard.service.save.message.SaveStatus;
 import wordwizard.service.similarword.SimilarityService;
 import wordwizard.service.themes.ThemesService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SaveService {
+    private static final int SAVE_TIMEOUT_SECONDS = 15;
+
     private final DatabaseManager repository;
     private final SaveDtoMapping dtoMapping;
     private final EmbeddingService embeddingService;
@@ -38,21 +42,22 @@ public class SaveService {
         List<CompletableFuture<ProcessOutcome>> futures = requests.stream()
                 .map(req -> CompletableFuture
                         .supplyAsync(() -> processWithContext(req), executor)
-                        .orTimeout(15, TimeUnit.SECONDS))
+                        .orTimeout(SAVE_TIMEOUT_SECONDS, TimeUnit.SECONDS))
                 .toList();
 
-        List<ProcessOutcome> outcomes = futures.stream()
-                .map(f -> {
-                    try {
-                        return f.join();
-                    } catch (Exception e) {
-                        Throwable cause = e.getCause() != null ? e.getCause() : e;
-                        log.warn("Failed to save word: {}", cause.getMessage());
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toList();
+        List<ProcessOutcome> outcomes = new ArrayList<>();
+        for (int i = 0; i < futures.size(); i++) {
+            UserWordRequest request = requests.get(i);
+            try {
+                outcomes.add(futures.get(i).join());
+            } catch (Exception e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                log.warn("Failed to save word '{}': {}", request.word(), cause.getMessage());
+                outcomes.add(new ProcessOutcome(
+                        new SaveResult(request.word(), SaveStatus.FAILED, describeFailure(cause)),
+                        null));
+            }
+        }
 
         List<Word> forThemes = outcomes.stream()
                 .map(ProcessOutcome::tempWord)
@@ -64,6 +69,13 @@ public class SaveService {
         }
 
         return outcomes.stream().map(ProcessOutcome::result).toList();
+    }
+
+    private String describeFailure(Throwable cause) {
+        if (cause instanceof TimeoutException) {
+            return "Save timed out after " + SAVE_TIMEOUT_SECONDS + " seconds.";
+        }
+        return cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
     }
 
     private ProcessOutcome processWithContext(UserWordRequest request) {
@@ -123,7 +135,7 @@ public class SaveService {
                     "Definition too similar to an existing one.");
         }
 
-        Definition newDef = dtoMapping.mapToDefinition(request.definition(), request.partOfSpeech());
+        Definition newDef = dtoMapping.mapToDefinition(request.definition());
         Long defId  = repository.addDefinitionToWord(existingWord.id(), newDef);
         repository.updateDefinitionEmbedding(defId, newEmbedding);
 

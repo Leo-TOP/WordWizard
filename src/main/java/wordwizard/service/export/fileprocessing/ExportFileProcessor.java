@@ -6,6 +6,7 @@ import wordwizard.exceptions.PermissionDeniedException;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 
 public class ExportFileProcessor {
@@ -15,7 +16,15 @@ public class ExportFileProcessor {
 
     public ExportFileProcessor(String path, String format) {
         this.format = ExportFormat.fromString(format);
-        this.filePath = Path.of(path);
+
+        if (path == null || path.isBlank()) {
+            throw new FileException("Output path must not be empty");
+        }
+        try {
+            this.filePath = Path.of(path);
+        } catch (InvalidPathException e) {
+            throw new FileException("Invalid output path \"" + path + "\": " + e.getReason(), e);
+        }
     }
 
     public Path process() {
@@ -25,7 +34,14 @@ public class ExportFileProcessor {
     }
 
     private void validateExtension() {
-        String filename = filePath.getFileName().toString();
+        Path fileName = filePath.getFileName();
+        if (fileName == null) {
+            throw new InvalidFileExtensionException(
+                    "Output path \"" + filePath + "\" has no file name. " +
+                    "Expected a file ending with one of: " + format.getValidExtensions());
+        }
+
+        String filename = fileName.toString();
         String ext = getExtension(filename);
 
         if (ext.isEmpty()) {

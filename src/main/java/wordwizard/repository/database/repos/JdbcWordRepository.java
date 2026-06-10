@@ -3,6 +3,7 @@ package wordwizard.repository.database.repos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import wordwizard.exceptions.WordNotFoundException;
 import wordwizard.models.Word;
 import wordwizard.repository.database.helpers.accumulaterows.AccumulateUtil;
 
@@ -30,7 +31,7 @@ public class JdbcWordRepository {
         return words.isEmpty() ? Optional.empty() : Optional.of(words.getFirst());
     }
 
-    public Map<String, List<Word>> findGroupedByTheme(String theme, String partOfSpeech, String startsWith) {
+    public Map<String, List<Word>> findFilteredGroupedByTheme(String theme, String partOfSpeech, String startsWith) {
         String sql = """
                 SELECT COALESCE(t.name, 'Uncategorized') AS theme_name,
                        w.id, w.word, w.created_at, w.updated_at,
@@ -39,9 +40,9 @@ public class JdbcWordRepository {
                 LEFT JOIN definitions d ON w.id = d.word_id
                 LEFT JOIN word_themes wt ON d.id = wt.definition_id
                 LEFT JOIN themes t ON wt.theme_id = t.id
-                WHERE (? IS NULL OR t.name = ?)
-                  AND (? IS NULL OR d.part_of_speech = ?)
-                  AND (? IS NULL OR w.word ILIKE ? || '%')
+                WHERE (CAST(? AS TEXT) IS NULL OR t.name = ?)
+                  AND (CAST(? AS TEXT) IS NULL OR d.part_of_speech = ?)
+                  AND (CAST(? AS TEXT) IS NULL OR w.word ILIKE ? || '%')
                 ORDER BY theme_name, w.word, d.id
                 """;
         List<Map<String, Object>> rows = jdbc.queryForList(
@@ -70,7 +71,10 @@ public class JdbcWordRepository {
         List<Map<String, Object>> rows = jdbc.queryForList(
                 WORD_WITH_DEFINITIONS_SQL + " WHERE w.id = ? ORDER BY d.id", wordId);
         List<Word> words = AccumulateUtil.accumulateRows(rows);
-        return words.isEmpty() ? null : words.getFirst();
+        if (words.isEmpty()) {
+            throw new WordNotFoundException("Word with id " + wordId + " was not found in the database");
+        }
+        return words.getFirst();
     }
 
     public void updateWordUpdatedAt(Long id) {

@@ -3,13 +3,16 @@ package wordwizard.service.export.exporters;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
+import wordwizard.exceptions.ExportException;
 import wordwizard.models.Definition;
 import wordwizard.models.Word;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class ExcelExporter implements Exporter {
@@ -27,8 +30,10 @@ public class ExcelExporter implements Exporter {
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
+            Set<String> usedNames = new HashSet<>();
             for (var entry : themedWords.entrySet()) {
-                Sheet sheet = workbook.createSheet(sanitizeSheetName(entry.getKey()));
+                String sheetName = uniqueSheetName(sanitizeSheetName(entry.getKey()), usedNames);
+                Sheet sheet = workbook.createSheet(sheetName);
                 createHeaderRow(workbook, sheet);
                 fillDataRows(sheet, entry.getValue());
                 autoSizeColumns(sheet);
@@ -37,12 +42,25 @@ public class ExcelExporter implements Exporter {
             workbook.write(out);
             return out.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create Excel file", e);
+            throw new ExportException("Failed to create Excel file: " + e.getMessage(), e);
         }
     }
 
+    /* Excel sheet names: max 31 chars, no [ ] * ? : / \ and must be non-empty and unique. */
     private String sanitizeSheetName(String name) {
-        return name.replaceAll("[\\[\\]*?:/\\\\]", "").substring(0, Math.min(31, name.length()));
+        String cleaned = name.replaceAll("[\\[\\]*?:/\\\\]", "").trim();
+        if (cleaned.isEmpty()) cleaned = "Theme";
+        return cleaned.substring(0, Math.min(31, cleaned.length()));
+    }
+
+    private String uniqueSheetName(String base, Set<String> usedNames) {
+        String candidate = base;
+        int counter = 2;
+        while (!usedNames.add(candidate.toLowerCase())) {
+            String suffix = " " + counter++;
+            candidate = base.substring(0, Math.min(31 - suffix.length(), base.length())) + suffix;
+        }
+        return candidate;
     }
 
     private void createHeaderRow(Workbook workbook, Sheet sheet) {

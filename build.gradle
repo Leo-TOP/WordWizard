@@ -1,7 +1,14 @@
 plugins {
     id 'application'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.6'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
@@ -13,6 +20,9 @@ repositories {
         url = 'https://repo.spring.io/snapshot'
     }
 }
+
+// POI 5.4 needs commons-lang3 >= 3.14; Spring Boot 3.2's BOM pins an older one
+ext['commons-lang3.version'] = '3.17.0'
 
 dependencyManagement {
     imports {
@@ -27,14 +37,18 @@ dependencies {
     implementation 'org.jetbrains:annotations:24.1.0'
 
 
-    compileOnly 'org.projectlombok:lombok:1.18.36'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.36'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+    testCompileOnly 'org.projectlombok:lombok:1.18.42'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.42'
 
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+    testImplementation 'org.testcontainers:postgresql:1.21.3'
 
 
     implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter'
@@ -53,12 +67,35 @@ dependencies {
 
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 
-    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi:5.4.0'
     implementation 'org.apache.poi:poi-ooxml:5.4.0'
 }
 
 test {
     useJUnitPlatform()
+    // Docker Engine 29+ rejects docker-java's default API version (1.32) with HTTP 400;
+    // docker-java reads the target version from the 'api.version' system property
+    systemProperty 'api.version', '1.44'
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                minimum = 0.80
+            }
+        }
+    }
 }
 
 application {

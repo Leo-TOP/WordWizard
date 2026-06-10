@@ -1,0 +1,93 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  WORD WIZARD — Help
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USAGE
+  wordwizard <command> [arguments] [options]
+
+COMMANDS
+
+  get-word <word>
+      Shows a word with all its definitions.
+      Options: --limit N   Show only the first N definitions
+               --verbose   Show part of speech, examples, and source
+      Example: wordwizard get-word algorithm --verbose --limit 3
+
+  get-words <words...>
+      Shows multiple words (compact view).
+      Example: wordwizard get-words algorithm compiler function
+
+  filter
+      Browses your dictionary with optional filters.
+      If no filters are given, shows all words. (Compact view; words grouped by theme)
+      Options: --theme <name>        Filter by theme
+               --pos <part of speech> Filter by part of speech
+               --starts-with <letter> Words starting with this letter
+      Example: wordwizard filter --theme programming --pos noun
+
+  themes
+      Lists all available themes with word counts.
+      Example: wordwizard themes
+
+  find-by-def <definition text>
+      Finds words from your dictionary with similar meaning to the given definition.
+      Example: wordwizard find-by-def "a step‑by‑step procedure"
+
+  similar <word>
+      Finds words from your dictionary with similar meaning to the given word.
+      Example: wordwizard similar algorithm
+
+  add <word> <definition> [<word> <definition>...]
+      Adds one or more word‑definition pairs to your dictionary.
+      (Order matters: word first, then definition.)
+      Example: wordwizard add qubit "a quantum bit"
+
+  export
+      Exports your dictionary to a file.
+      Options: --format <text|markdown|excel|docx>   (default: markdown)
+               --theme <name>                          Filter by theme
+               --pos <part of speech>                  Filter by POS
+               --starts-with <letter>                  Filter by first letter
+               --output <path>                         Output file path (required)
+      Example: wordwizard export --theme programming --format excel
+
+  stats
+      Shows statistics about your dictionary.
+      Example: wordwizard stats
+
+  help
+      Shows this help text.
+      Example: wordwizard help
+
+  exit
+      Exits the application.
+
+PART OF SPEECH VALUES
+  noun, verb, adjective, adverb, preposition, conjunction,
+  pronoun, interjection, exclamation
+
+EXAMPLES
+  # Find words
+  wordwizard filter --theme programming
+  wordwizard get-word algorithm --verbose
+  wordwizard themes
+
+  # Find words by meaning
+  wordwizard find-by-def "a reusable block of code"
+
+  # Add your own knowledge
+  wordwizard add recursion "a function that calls itself"
+
+  # Export for studying
+  wordwizard export --format excel --output my-vocabulary.xlsx
+  wordwizard export --theme science --format markdown
+
+NOTES
+  • All commands and options are case‑insensitive.
+  • Options can appear anywhere (before or after arguments).
+  • The first time you call 'get-word' or 'get-words', the data will be fetched from the internet.
+    After that, it's stored locally and available offline.
+  • Themes are assigned automatically using AI.
+  • Export files group words by theme for easy navigation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

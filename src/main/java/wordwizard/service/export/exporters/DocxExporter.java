@@ -4,6 +4,7 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.springframework.stereotype.Component;
+import wordwizard.exceptions.ExportException;
 import wordwizard.models.Definition;
 import wordwizard.models.Word;
 
@@ -37,7 +38,7 @@ public class DocxExporter implements Exporter {
             doc.write(out);
             return out.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create DOCX", e);
+            throw new ExportException("Failed to create DOCX file: " + e.getMessage(), e);
         }
     }
 

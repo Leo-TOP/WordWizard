@@ -1,7 +1,9 @@
 package wordwizard.repository.database.repos;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import wordwizard.exceptions.DataMappingException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import wordwizard.models.Theme;
@@ -47,13 +49,22 @@ public class JdbcThemeRepository {
 
 
     public Long getOrCreate(String name) {
-        return findByName(name)
-                .map(Theme::id)
-                .orElseGet(() -> jdbc.queryForObject(
-                        "INSERT INTO themes (name) VALUES (?) RETURNING id",
-                        Long.class,
-                        name
-                ));
+        Optional<Theme> existing = findByName(name);
+        if (existing.isPresent()) return existing.get().id();
+
+        try {
+            return jdbc.queryForObject(
+                    "INSERT INTO themes (name) VALUES (?) RETURNING id",
+                    Long.class,
+                    name
+            );
+        } catch (DuplicateKeyException e) {
+            // another thread/instance created the theme between our SELECT and INSERT
+            return findByName(name)
+                    .map(Theme::id)
+                    .orElseThrow(() -> new DataMappingException(
+                            "Theme \"" + name + "\" is missing right after a duplicate-key conflict"));
+        }
     }
 
     public void assignToDefinition(Long wordId, Long themeId, Long definitionId) {

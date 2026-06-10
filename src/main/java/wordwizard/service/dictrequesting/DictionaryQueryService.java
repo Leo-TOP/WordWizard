@@ -16,12 +16,12 @@ import java.util.Map;
 public class DictionaryQueryService {
     private final DatabaseManager repository;
 
-    public Map<String, List<Word>> getWords(FilterRequest request) {
-        if (request == null || request.isEmpty()){
-           return repository.getAllWordsGroupedByTheme();
-        }
-
-        return repository.findFilteredWordsGroupedByTheme(request.theme(), request.partOfSpeech(), request.startsWith());
+    public Map<String, List<Word>> getFilteredWords(FilterRequest request) {
+        // a null request means "no filters" (e.g. export without filter options)
+        FilterRequest filter = request != null ? request : new FilterRequest(null, null, null);
+        return repository.findFilteredWordsGroupedByTheme(filter.theme(),
+                filter.partOfSpeech(),
+                filter.startsWith());
     }
 
     public List<Theme> getAllThemes() {

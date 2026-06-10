@@ -1,5 +1,6 @@
 package wordwizard.repository.database.helpers.accumulaterows;
 
+import wordwizard.exceptions.DataMappingException;
 import wordwizard.models.Definition;
 import wordwizard.models.Word;
 import wordwizard.repository.database.helpers.CastHelper;
@@ -16,7 +17,7 @@ public final class AccumulateUtil {
         Map<Long, AccumulateHelper> accumulators = new LinkedHashMap<>();
 
         for (Map<String, Object> row : rows) {
-            Long wordId = CastHelper.toLong(row.get("id"));
+            Long wordId = requireWordId(row);
             AccumulateHelper acc = accumulators.computeIfAbsent(wordId, id -> new AccumulateHelper(row));
 
             Long defId = CastHelper.toLong(row.get("def_id"));
@@ -42,7 +43,7 @@ public final class AccumulateUtil {
 
         for (Map<String, Object> row : rows) {
             String themeName = (String) row.get("theme_name");
-            Long wordId = CastHelper.toLong(row.get("id"));
+            Long wordId = requireWordId(row);
 
             Map<Long, AccumulateHelper> themeGroup =
                     grouped.computeIfAbsent(themeName, k -> new LinkedHashMap<>());
@@ -65,5 +66,15 @@ public final class AccumulateUtil {
         grouped.forEach((themeName, accMap) ->
                 result.put(themeName, accMap.values().stream().map(AccumulateHelper::build).toList()));
         return result;
+    }
+
+    /* A null id key would silently merge every word into a single accumulator. */
+    private static Long requireWordId(Map<String, Object> row) {
+        Long wordId = CastHelper.toLong(row.get("id"));
+        if (wordId == null) {
+            throw new DataMappingException(
+                    "Database row for word \"" + row.get("word") + "\" has no id — cannot group definitions");
+        }
+        return wordId;
     }
 }

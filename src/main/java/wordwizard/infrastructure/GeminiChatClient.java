@@ -6,6 +6,7 @@ import com.google.genai.types.GenerateContentResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import wordwizard.exceptions.GeminiApiException;
 
 @Slf4j
 @Repository
@@ -23,13 +24,20 @@ public class GeminiChatClient {
     }
 
     public String generateContent(String prompt) {
+        GenerateContentResponse response;
         try {
-            GenerateContentResponse response =
-                    client.models.generateContent(modelName, prompt, generationConfig);
-            return response.text();
+            response = client.models.generateContent(modelName, prompt, generationConfig);
         } catch (Exception e) {
             log.error("Gemini API call failed: {}", e.getMessage());
-            throw new RuntimeException("Gemini generation error", e);
+            throw new GeminiApiException("Gemini API call failed: " + e.getMessage(), e);
         }
+
+        String text = response.text();
+        if (text == null || text.isBlank()) {
+            throw new GeminiApiException(
+                    "Gemini returned an empty response (model: " + modelName
+                            + ") — the answer may have been blocked or truncated");
+        }
+        return text;
     }
 }

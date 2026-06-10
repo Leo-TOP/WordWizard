@@ -3,7 +3,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS words (
     id              SERIAL PRIMARY KEY,
     word            VARCHAR(255) NOT NULL UNIQUE,
-    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS definitions (
@@ -16,9 +17,10 @@ CREATE TABLE IF NOT EXISTS definitions (
     embedding      vector(384)
 );
 
+-- HNSW instead of ivfflat: an ivfflat index created on an empty table has
+-- degenerate centroids and approximate search may miss rows entirely.
 CREATE INDEX IF NOT EXISTS idx_definitions_embedding
-    ON definitions USING ivfflat (embedding vector_cosine_ops)
-    WITH (lists = 100);
+    ON definitions USING hnsw (embedding vector_cosine_ops);
 
 CREATE TABLE IF NOT EXISTS themes (
     id          SERIAL PRIMARY KEY,

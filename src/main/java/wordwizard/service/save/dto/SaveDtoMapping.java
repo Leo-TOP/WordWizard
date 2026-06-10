@@ -11,17 +11,15 @@ public class SaveDtoMapping {
 
     public Word mapToWord(UserWordRequest request){
         List<Definition> definitions = List.of(mapToDefinition(
-                request.definition(),
-                request.partOfSpeech())
+                request.definition())
         );
 
         return Word.createWordWithoutId(request.word(), definitions);
     }
 
-    public Definition mapToDefinition(String definition, String pos) {
-        return Definition.createWithoutExampleAndId(
+    public Definition mapToDefinition(String definition) {
+        return Definition.createWithOnlyText(
                 definition,
-                pos,
                 "user");
     }
 }

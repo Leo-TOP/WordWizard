@@ -1,14 +1,14 @@
 package wordwizard.service.validation.pos;
 
+import org.springframework.stereotype.Component;
 import wordwizard.exceptions.InvalidWordException;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class PosValidator {
-    private PosValidator() {}
-
-    public static void validatePos(String pos) {
+@Component
+public class PosValidator {
+    public void validatePos(String pos) {
         if (pos == null) return;
 
         if (PartOfSpeech.fromString(pos).isEmpty()) {
@@ -17,7 +17,7 @@ public final class PosValidator {
         }
     }
 
-    private static String supportedLabels() {
+    private String supportedLabels() {
         return Arrays.stream(PartOfSpeech.values())
                 .map(PartOfSpeech::getLabel)
                 .collect(Collectors.joining(", "));
