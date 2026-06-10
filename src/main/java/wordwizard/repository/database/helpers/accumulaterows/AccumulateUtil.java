@@ -68,7 +68,6 @@ public final class AccumulateUtil {
         return result;
     }
 
-    /* A null id key would silently merge every word into a single accumulator. */
     private static Long requireWordId(Map<String, Object> row) {
         Long wordId = CastHelper.toLong(row.get("id"));
         if (wordId == null) {

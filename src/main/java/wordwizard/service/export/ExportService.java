@@ -26,7 +26,6 @@ public class ExportService {
     public void export(ExportRequest request) {
         Exporter exporter = exporterFactory.getExporter(request.format());
 
-        // validate path and format before touching the database or building the file
         var fileProcessor = new ExportFileProcessor(request.outputPath(), request.format());
         Path filePath = fileProcessor.process();
 

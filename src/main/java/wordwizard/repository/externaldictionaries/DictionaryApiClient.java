@@ -25,11 +25,6 @@ public class DictionaryApiClient {
         private final RestTemplate restTemplate;
         private final Gson gson;
 
-
-        /**
-         * @return the API response, or {@code null} only when the word genuinely
-         *         does not exist (HTTP 404). Any other failure throws.
-         */
         public DictionaryApiResponse fetchWord(String word) {
                 String raw = fetchRawJson(word);
                 if (raw == null) return null;

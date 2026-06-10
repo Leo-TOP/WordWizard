@@ -17,7 +17,6 @@ public class DictionaryQueryService {
     private final DatabaseManager repository;
 
     public Map<String, List<Word>> getFilteredWords(FilterRequest request) {
-        // a null request means "no filters" (e.g. export without filter options)
         FilterRequest filter = request != null ? request : new FilterRequest(null, null, null);
         return repository.findFilteredWordsGroupedByTheme(filter.theme(),
                 filter.partOfSpeech(),

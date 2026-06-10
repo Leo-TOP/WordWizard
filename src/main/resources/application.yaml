@@ -22,3 +22,11 @@ spring:
             padding: true
         onnx:
           modelUri: classpath:onnx/all-MiniLM-L6-v2/model.onnx
+
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    root: WARN
+    wordwizard: DEBUG

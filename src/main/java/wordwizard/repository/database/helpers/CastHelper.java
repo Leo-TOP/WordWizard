@@ -8,8 +8,6 @@ import java.time.LocalDateTime;
 public final class CastHelper {
     private CastHelper() {}
 
-    /* Database NULL stays null (e.g. def_id from a LEFT JOIN);
-       a non-null value of an unexpected type is corruption and must fail loudly. */
     public static Long toLong(Object value) {
         if (value == null) return null;
         if (value instanceof Number n) return n.longValue();

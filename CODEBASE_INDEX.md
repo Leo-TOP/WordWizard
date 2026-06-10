@@ -1,5 +1,5 @@
 # Codebase Index
-> 2026-06-10 · 137 files · ~63.7k tokens total
+> 2026-06-10 · 138 files · ~66.1k tokens total
 >
 > **How to use:** Read this file first. Navigate to the exact file you need,
 > then read only that file. Do not read entire directories.
@@ -86,7 +86,7 @@
 - `Word.java` — Word, createWordWithoutId
 
 **src\main\java\wordwizard\repository\database/**
-- `DatabaseManager.java` — DatabaseManager, findAllThemes, getOrCreateTheme, assignThemeToDefinition, findByWord, saveWord, updateDefinitionEmbedding, getSimilarTo +2
+- `DatabaseManager.java` — DatabaseManager, findAllThemes, getOrCreateTheme, assignThemeToDefinition, findThemedDefinitionIds, findByWord, saveWord, updateDefinitionEmbedding +2
 
 **src\main\java\wordwizard\repository\database\helpers/**
 - `CastHelper.java` — CastHelper, toLong, toLocalDateTime, toPGvector
@@ -98,7 +98,7 @@
 **src\main\java\wordwizard\repository\database\repos/**
 - `JdbcDefinitionRepository.java` — JdbcDefinitionRepository, save, updateEmbedding, findByWordId, findByEmbedding, findSimilarTo, findSimilarDefinition
 - `JdbcStatisticsRepository.java` — JdbcStatisticsRepository, getStatistics
-- `JdbcThemeRepository.java` — JdbcThemeRepository, findAll, findByName, getOrCreate, assignToDefinition
+- `JdbcThemeRepository.java` — JdbcThemeRepository, findAll, findByName, getOrCreate, findThemedDefinitionIds, assignToDefinition
 - `JdbcWordRepository.java` — JdbcWordRepository, findByName, findFilteredGroupedByTheme, save, findById, updateWordUpdatedAt
 
 **src\main\java\wordwizard\repository\externaldictionaries/**
@@ -266,7 +266,8 @@
 
 ## Docs
 - `CODEBASE_INDEX.md`
+- `LICENSE.md`
 - `README.md`
 
 ---
-*Index: ~3.2k tokens · Full codebase: ~63.7k tokens · Saves ~95%*
+*Index: ~3.2k tokens · Full codebase: ~66.1k tokens · Saves ~95%*

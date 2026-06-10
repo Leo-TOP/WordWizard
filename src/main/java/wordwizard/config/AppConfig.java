@@ -23,7 +23,7 @@ public class AppConfig {
     @Bean
     public GenerateContentConfig geminiGenerationConfig() {
         return GenerateContentConfig.builder()
-                .maxOutputTokens(2048)
+                .maxOutputTokens(65536)
                 .responseMimeType("application/json")
                 .thinkingConfig(ThinkingConfig.builder().thinkingBudget(512).build())
                 .build();
@@ -33,7 +33,7 @@ public class AppConfig {
     public Client geminiClient() {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException(
-                    "Gemini API key is empty — set GOOGLE_GENAI_API_KEY in secret/.env");
+                    "Gemini API key is empty — set GOOGLE_GENAI_API_KEY in .env");
         }
         return Client.builder()
                 .apiKey(apiKey)

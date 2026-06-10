@@ -12,6 +12,7 @@ import wordwizard.repository.database.repos.JdbcWordRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,6 +28,10 @@ public class DatabaseManager {
 
     public void assignThemeToDefinition(Long wordId, Long themeId, Long defId) {
         themeRepository.assignToDefinition(wordId, themeId, defId);
+    }
+
+    public Set<Long> findThemedDefinitionIds(List<Long> wordIds) {
+        return themeRepository.findThemedDefinitionIds(wordIds);
     }
 
     public Optional<Word> findByWord(String word) { return wordRepository.findByName(word); }

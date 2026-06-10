@@ -17,6 +17,7 @@ import wordwizard.models.Theme;
 import wordwizard.models.Word;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,8 +33,11 @@ public class ThemesService {
     public void assignThemesToWords(List<Word> words) {
             if (words == null || words.isEmpty()) return;
 
+            List<Word> needingThemes = withUnthemedDefinitionsOnly(words);
+            if (needingThemes.isEmpty()) return;
+
             List<Theme> allThemes = repository.findAllThemes();
-            String prompt = promptBuilder.buildThemeAssignmentPrompt(words, allThemes);
+            String prompt = promptBuilder.buildThemeAssignmentPrompt(needingThemes, allThemes);
 
             BatchThemeResponse batchResponse;
             try {
@@ -44,10 +48,23 @@ public class ThemesService {
                         "Words were saved, but theme assignment failed: " + e.getMessage(), e);
             }
 
-            List<AssignmentInput> inputs = mapper.toAssignments(batchResponse, words);
+            List<AssignmentInput> inputs = mapper.toAssignments(batchResponse, needingThemes);
             inputs.forEach(this::saveAssignment);
 
-            log.info("Applied {} theme assignments for {} words", inputs.size(), words.size());
+            log.info("Applied {} theme assignments for {} words", inputs.size(), needingThemes.size());
+    }
+
+    private List<Word> withUnthemedDefinitionsOnly(List<Word> words) {
+        Set<Long> themedDefIds = repository.findThemedDefinitionIds(
+                words.stream().map(Word::id).toList());
+
+        return words.stream()
+                .map(word -> new Word(word.id(), word.word(), word.createdAt(), word.updatedAt(),
+                        word.definitions().stream()
+                                .filter(def -> !themedDefIds.contains(def.id()))
+                                .toList()))
+                .filter(word -> !word.definitions().isEmpty())
+                .toList();
     }
 
     private void saveAssignment(AssignmentInput input) {

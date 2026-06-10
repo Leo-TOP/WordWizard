@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Configuration;
 public class DotenvConfig {
 
     static {
+        // Loads the project-root .env — the same file Docker Compose reads.
         Dotenv dotenv = Dotenv.configure()
-                .directory("secret")
                 .ignoreIfMissing()
                 .load();
 

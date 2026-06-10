@@ -1,5 +1,3 @@
-# Spring Boot 3.2's Gradle plugin does not support Gradle 9 (the project wrapper),
-# so the image builds with its own Gradle 8.14 + JDK 21
 FROM gradle:8.14-jdk21 AS builder
 WORKDIR /app
 
@@ -11,13 +9,14 @@ COPY src src
 
 RUN gradle bootJar --no-daemon
 
-
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
+RUN groupadd --system appgroup && useradd --system --gid appgroup --create-home appuser
 
-RUN mkdir -p /app/output /app/logs && chown -R appuser:appgroup /app
+ENV DJL_CACHE_DIR=/app/.djl_cache
+
+RUN mkdir -p /app/output /app/logs /app/.djl_cache && chown -R appuser:appgroup /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 

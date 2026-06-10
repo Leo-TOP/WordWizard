@@ -46,7 +46,6 @@ public class ExcelExporter implements Exporter {
         }
     }
 
-    /* Excel sheet names: max 31 chars, no [ ] * ? : / \ and must be non-empty and unique. */
     private String sanitizeSheetName(String name) {
         String cleaned = name.replaceAll("[\\[\\]*?:/\\\\]", "").trim();
         if (cleaned.isEmpty()) cleaned = "Theme";

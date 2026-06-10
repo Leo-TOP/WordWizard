@@ -8,8 +8,11 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import wordwizard.models.Theme;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Repository
@@ -59,12 +62,22 @@ public class JdbcThemeRepository {
                     name
             );
         } catch (DuplicateKeyException e) {
-            // another thread/instance created the theme between our SELECT and INSERT
             return findByName(name)
                     .map(Theme::id)
                     .orElseThrow(() -> new DataMappingException(
                             "Theme \"" + name + "\" is missing right after a duplicate-key conflict"));
         }
+    }
+
+    public Set<Long> findThemedDefinitionIds(List<Long> wordIds) {
+        if (wordIds.isEmpty()) return Set.of();
+
+        String placeholders = String.join(", ", Collections.nCopies(wordIds.size(), "?"));
+        return new HashSet<>(jdbc.queryForList(
+                "SELECT DISTINCT definition_id FROM word_themes WHERE word_id IN (" + placeholders + ")",
+                Long.class,
+                wordIds.toArray()
+        ));
     }
 
     public void assignToDefinition(Long wordId, Long themeId, Long definitionId) {

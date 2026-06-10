@@ -33,7 +33,7 @@ public class CliEngine implements CommandLineRunner {
 
         while (true) {
             System.out.print("> ");
-            if (!scanner.hasNextLine()) break; // EOF (Ctrl+D / end of piped input)
+            if (!scanner.hasNextLine()) break;
             String line = scanner.nextLine().trim();
 
             if (line.isEmpty()) {

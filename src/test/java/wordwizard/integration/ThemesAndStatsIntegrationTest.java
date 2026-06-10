@@ -77,6 +77,54 @@ class ThemesAndStatsIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void skipsAiCallWhenWordIsAlreadyFullyThemed() {
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenReturn(themeJson("lion", 0, "animals"));
+        centralService.addUserWords(List.of(new UserWordRequest("lion", "a big cat")));
+        assertEquals(1, countRows("word_themes"));
+
+        Mockito.clearInvocations(geminiChatClient);
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenReturn(themeJson("lion", 0, "royalty")); // would create a second theme if used
+        centralService.getWord(new WordRequest("lion", null, null));
+
+        Mockito.verify(geminiChatClient, Mockito.never()).generateContent(Mockito.anyString());
+        assertEquals(1, countRows("word_themes"));
+        assertEquals(1, countRows("themes"));
+    }
+
+    @Test
+    void assignsThemesOnNextLookupAfterFailedAssignment() {
+        expectDictionarySuccess("storm");
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenThrow(new GeminiApiException("User location is not supported"));
+        assertThrows(ThemeAssignmentException.class,
+                () -> centralService.getWord(new WordRequest("storm", null, null)));
+        assertEquals(0, countRows("word_themes"));
+
+        Mockito.reset(geminiChatClient);
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenReturn(themeJson("storm", 0, "weather"));
+        centralService.getWord(new WordRequest("storm", null, null)); // cache hit, still unthemed
+
+        assertEquals(1, countRows("word_themes"));
+    }
+
+    @Test
+    void themesOnlyTheNewDefinitionWhenAddedToThemedWord() {
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenReturn(themeJson("lion", 0, "animals"));
+        centralService.addUserWords(List.of(new UserWordRequest("lion", "a big cat")));
+
+        Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
+                .thenReturn(themeJson("lion", 0, "royalty"));
+        centralService.addUserWords(List.of(new UserWordRequest("lion", "a brave person")));
+
+        assertEquals(2, countRows("word_themes"));
+        assertEquals(2, countRows("themes"));
+    }
+
+    @Test
     void getAllThemesReturnsThemesWithWordCounts() {
         Mockito.when(geminiChatClient.generateContent(Mockito.anyString()))
                 .thenReturn(themeJson("falcon", 0, "birds"));
