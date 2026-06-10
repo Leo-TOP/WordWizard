@@ -69,8 +69,8 @@ cp .env.example .env
 # 3. Build and start everything (database + app)
 docker compose up -d --build
 
-# 4. Attach to the interactive CLI
-docker attach wordwizard-app
+# 4. Open an interactive session
+docker compose run --rm app
 ```
 
 Type `help` to see all commands. To leave the CLI without stopping it, detach with `Ctrl‑P` then `Ctrl‑Q` (plain `Ctrl‑C` kills the session).
