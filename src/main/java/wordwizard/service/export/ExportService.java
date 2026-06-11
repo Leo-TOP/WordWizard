@@ -12,7 +12,6 @@ import wordwizard.service.export.fileprocessing.ExportFileProcessor;
 import wordwizard.util.FileUtil;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +38,10 @@ public class ExportService {
         FileUtil.writeBinaryToFile(filePath, content);
 
         log.info("Exported {} word(s) to {} (format: {})",
-               groupedWords.values().
-                       stream().
-                       mapToLong(Collection::size).
-                       sum(), request.outputPath(), request.format());
+         groupedWords.values().stream()
+                .flatMap(List::stream)
+                .map(Word::id)
+                .distinct()
+                .count(), request.outputPath(), request.format());
     }
 }

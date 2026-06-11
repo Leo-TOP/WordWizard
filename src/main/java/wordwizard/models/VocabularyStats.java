@@ -5,7 +5,7 @@ import java.util.Map;
 public record VocabularyStats(
         int totalWords,
         int totalDefinitions,
-        double avgDefinitionsPerWord,
+        long avgDefinitionsPerWord,
         Map<String, Integer> wordsByPos,
         Map<String, Integer> wordsByTheme,
         int totalThemes,

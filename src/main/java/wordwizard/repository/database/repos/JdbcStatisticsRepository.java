@@ -18,7 +18,7 @@ public class JdbcStatisticsRepository {
     public VocabularyStats getStatistics() {
         int totalWords = countTotalWords();
         int totalDefs  = countTotalDefinitions();
-        double avgDefs = totalWords > 0 ? (double) totalDefs / totalWords : 0.0;
+        long avgDefs = totalWords > 0 ? Math.round((double) totalDefs / totalWords) : 0;
 
         int totalThemes = countTotalThemes();
         int last7       = countWordsAddedSinceDays(7);
