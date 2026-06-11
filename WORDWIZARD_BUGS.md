@@ -1,12 +1,12 @@
-# App bugs
+# App Bugs
 
-## Minor inconsistencies
+## Minor Inconsistencies
 
-### Fixed but not included in docker image
+### Fixed but not yet included in Docker image
 
-* Fixed statistics logic and output (definitionPerWord is now long).
-* Fixed words count output in ExportService (used to count duplicates).
+- Fixed statistics logic and output (`avgDefinitionsPerWord` is now a `long`).
+- Fixed word count in export log message (previously counted duplicate words across themes).
 
-### Not fixed
+### Not Fixed
 
-* Delayed file appearing after exportation (maybe it's my local issue, but it still needed to be addressed)
+- **Delayed file appearance after export** — the exported file may take a few seconds to appear in the output directory.
